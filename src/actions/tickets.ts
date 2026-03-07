@@ -14,6 +14,16 @@ import {
   ActivityAction,
 } from "@prisma/client";
 
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  OPEN: ["ASSIGNED", "CLOSED"],
+  ASSIGNED: ["IN_PROGRESS", "OPEN"],
+  IN_PROGRESS: ["COMPLETED", "ON_HOLD", "ASSIGNED"],
+  ON_HOLD: ["IN_PROGRESS", "CLOSED"],
+  COMPLETED: ["VERIFIED", "IN_PROGRESS"],
+  VERIFIED: ["CLOSED"],
+  CLOSED: ["OPEN"]
+};
+
 // ============================================================================
 // Validation schemas
 // ============================================================================
@@ -159,6 +169,16 @@ export async function updateTicketStatus(formData: FormData) {
   });
 
   if (!ticket) return { error: "Ticket not found" };
+
+  // Strict state machine validation
+  const currentStatus = ticket.status as string;
+  const allowedNextStatuses = ALLOWED_TRANSITIONS[currentStatus] || [];
+
+  if (currentStatus !== status && !allowedNextStatuses.includes(status)) {
+    return {
+      error: `Invalid status transition from ${currentStatus.replace("_", " ")} to ${status.replace("_", " ")}`
+    };
+  }
 
   // Build timestamp updates based on status transition
   const timestamps: Record<string, Date> = {};
