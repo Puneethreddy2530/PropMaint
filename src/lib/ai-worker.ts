@@ -21,13 +21,13 @@ self.addEventListener('message', async (event: any) => {
     const { text, labels } = event.data;
 
     // Load the pipeline
-    let classifier = await PipelineSingleton.getInstance((x: any) => {
+    const classifier = await PipelineSingleton.getInstance((x: any) => {
         // We can send loading progress back to the UI
         self.postMessage(x);
     });
 
     // Run the zero-shot classification
-    let output = await classifier(text, labels);
+    const output = await classifier(text, labels);
 
     self.postMessage({
         status: 'complete',
