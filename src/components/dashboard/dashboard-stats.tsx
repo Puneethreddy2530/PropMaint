@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, Clock, CheckCircle, AlertTriangle, Flame } from "lucide-react";
+import { Ticket, Clock, CheckCircle2, AlertTriangle, Flame } from "lucide-react";
 
 interface DashboardStatsProps {
     stats: {

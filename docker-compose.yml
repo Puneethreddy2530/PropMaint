@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: propmaint
+      POSTGRES_PASSWORD: propmaint_secret
+      POSTGRES_DB: propmaint
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U propmaint"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://propmaint:propmaint_secret@db:5432/propmaint?schema=public"
+      AUTH_SECRET: "docker-dev-secret-change-in-production-please"
+      AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_NAME: "PropMaint"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

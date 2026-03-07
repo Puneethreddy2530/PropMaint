@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatRelativeTime } from "@/lib/utils";
+import { STATUS_CONFIG } from "@/lib/permissions";
 
 interface Ticket {
     id: string;
@@ -57,11 +58,11 @@ export function RecentTickets({ tickets }: RecentTicketsProps) {
                                     </p>
                                 </div>
                                 <div className="ml-auto flex flex-col items-end gap-1">
-                                    <Badge variant={ticket.status === "OPEN" ? "destructive" : "secondary"}>
-                                        {ticket.status}
+                                    <Badge variant={(STATUS_CONFIG[ticket.status as keyof typeof STATUS_CONFIG]?.variant || "secondary") as any}>
+                                        {STATUS_CONFIG[ticket.status as keyof typeof STATUS_CONFIG]?.label || ticket.status}
                                     </Badge>
                                     <span className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                                        {formatRelativeTime(ticket.createdAt)}
                                     </span>
                                 </div>
                             </div>

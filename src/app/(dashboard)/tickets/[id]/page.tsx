@@ -9,6 +9,7 @@ import { formatDate, formatRelativeTime } from "@/lib/utils";
 import { TicketActions } from "@/components/tickets/ticket-actions";
 import { ActivityTimeline } from "@/components/tickets/activity-timeline";
 import { CommentSection } from "@/components/tickets/comment-section";
+import { FileUpload } from "@/components/tickets/file-upload";
 import {
     MapPin, Clock, User, Wrench, CalendarDays, DollarSign,
     Shield, AlertTriangle, Phone, Mail,
@@ -92,6 +93,19 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                     <p className="text-sm text-emerald-900">{ticket.resolution}</p>
                                 </div>
                             )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Attachments / File Upload */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm">Attachments</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <FileUpload
+                                ticketId={ticket.id}
+                                existingAttachments={ticket.attachments}
+                            />
                         </CardContent>
                     </Card>
 
