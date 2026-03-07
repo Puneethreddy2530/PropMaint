@@ -1,0 +1,316 @@
+// ============================================================================
+// PropMaint - Property Maintenance Management System
+// Database Schema - PostgreSQL via Prisma ORM
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  TENANT
+  MANAGER
+  STAFF
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  VERIFIED
+  CLOSED
+}
+
+enum TicketPriority {
+  EMERGENCY  // 2-hour SLA
+  URGENT     // 24-hour SLA
+  ROUTINE    // 72-hour SLA
+  SCHEDULED  // No SLA - planned maintenance
+}
+
+enum TicketCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  APPLIANCE
+  STRUCTURAL
+  PEST_CONTROL
+  GENERAL
+  SAFETY
+}
+
+enum ActivityAction {
+  TICKET_CREATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNED
+  REASSIGNED
+  COMMENT_ADDED
+  INTERNAL_NOTE_ADDED
+  PHOTO_UPLOADED
+  COST_UPDATED
+  SLA_BREACHED
+  ESCALATED
+}
+
+enum NotificationType {
+  TICKET_CREATED
+  TICKET_ASSIGNED
+  STATUS_UPDATE
+  COMMENT_ADDED
+  SLA_WARNING
+  ESCALATION
+}
+
+// ============================================================================
+// USER & AUTH
+// ============================================================================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String
+  role           UserRole
+  phone          String?
+  avatarUrl      String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  tenantUnit     Unit?     @relation("TenantUnit", fields: [tenantUnitId], references: [id])
+  tenantUnitId   String?
+
+  // Tickets created by this user (tenant submitting requests)
+  createdTickets   Ticket[]       @relation("TicketCreator")
+  // Tickets assigned to this user (staff)
+  assignedTickets  Ticket[]       @relation("TicketAssignee")
+  // Activity performed by this user
+  activities       ActivityLog[]
+  // Comments made by this user
+  comments         Comment[]
+  // Notifications for this user
+  notifications    Notification[]
+  // Properties managed by this user (manager)
+  managedProperties Property[]     @relation("PropertyManager")
+
+  // Staff specialties (for technicians)
+  specialties    TicketCategory[]
+
+  @@index([role])
+  @@index([email])
+}
+
+// ============================================================================
+// PROPERTY HIERARCHY: Property → Building → Unit
+// ============================================================================
+
+model Property {
+  id          String   @id @default(cuid())
+  name        String                          // "Sunset Apartments"
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  manager     User?    @relation("PropertyManager", fields: [managerId], references: [id])
+  managerId   String?
+  buildings   Building[]
+  tickets     Ticket[]
+
+  @@index([managerId])
+}
+
+model Building {
+  id          String   @id @default(cuid())
+  name        String                          // "Building A", "Tower 1"
+  floors      Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  units       Unit[]
+
+  @@index([propertyId])
+}
+
+model Unit {
+  id          String   @id @default(cuid())
+  number      String                          // "101", "A-204"
+  floor       Int      @default(1)
+  bedrooms    Int      @default(1)
+  bathrooms   Int      @default(1)
+  sqft        Int?
+  isOccupied  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  buildingId  String
+  tenants     User[]   @relation("TenantUnit")
+  tickets     Ticket[]
+
+  @@unique([buildingId, number])
+  @@index([buildingId])
+}
+
+// ============================================================================
+// MAINTENANCE TICKETS - The core of the system
+// ============================================================================
+
+model Ticket {
+  id              String         @id @default(cuid())
+  title           String
+  description     String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(ROUTINE)
+  category        TicketCategory @default(GENERAL)
+
+  // Workflow fields
+  permissionToEnter  Boolean     @default(false)
+  preferredTimes     String?                       // "Weekdays 9am-5pm"
+  estimatedCost      Float?
+  actualCost         Float?
+  resolution         String?                       // Resolution notes
+
+  // SLA tracking
+  slaDeadline     DateTime?                        // Calculated from priority
+  slaBroken       Boolean      @default(false)
+  acknowledgedAt  DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  verifiedAt      DateTime?
+  closedAt        DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  property        Property     @relation(fields: [propertyId], references: [id])
+  propertyId      String
+  unit            Unit         @relation(fields: [unitId], references: [id])
+  unitId          String
+  createdBy       User         @relation("TicketCreator", fields: [createdById], references: [id])
+  createdById     String
+  assignedTo      User?        @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  assignedToId    String?
+
+  // Related data
+  attachments     Attachment[]
+  activities      ActivityLog[]
+  comments        Comment[]
+  notifications   Notification[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([propertyId])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([createdAt])
+  @@index([slaDeadline])
+}
+
+// ============================================================================
+// ATTACHMENTS (Images/Files)
+// ============================================================================
+
+model Attachment {
+  id          String   @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  fileSize    Int                               // bytes
+  mimeType    String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+
+  @@index([ticketId])
+}
+
+// ============================================================================
+// ACTIVITY LOG - Full audit trail per ticket
+// ============================================================================
+
+model ActivityLog {
+  id             String         @id @default(cuid())
+  action         ActivityAction
+  description    String                          // Human-readable: "Changed status from Open to Assigned"
+  previousValue  String?                         // For tracking changes
+  newValue       String?
+  metadata       Json?                           // Flexible extra data
+  createdAt      DateTime       @default(now())
+
+  // Relations
+  ticket         Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId       String
+  performedBy    User           @relation(fields: [performedById], references: [id])
+  performedById  String
+
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// COMMENTS - Tenant-visible and internal staff notes
+// ============================================================================
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  isInternal  Boolean  @default(false)           // true = staff-only note
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  link      String?                              // Deep link to relevant page
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  ticket    Ticket?          @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  ticketId  String?
+
+  @@index([userId, read])
+  @@index([createdAt])
+}

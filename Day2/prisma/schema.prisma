@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  TENANT
+  MANAGER
+  STAFF
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  VERIFIED
+  CLOSED
+}
+
+enum TicketPriority {
+  EMERGENCY
+  URGENT
+  ROUTINE
+  SCHEDULED
+}
+
+enum TicketCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  APPLIANCE
+  STRUCTURAL
+  PEST_CONTROL
+  GENERAL
+  SAFETY
+}
+
+enum ActivityAction {
+  TICKET_CREATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNED
+  REASSIGNED
+  COMMENT_ADDED
+  INTERNAL_NOTE_ADDED
+  PHOTO_UPLOADED
+  COST_UPDATED
+  SLA_BREACHED
+  ESCALATED
+}
+
+enum NotificationType {
+  TICKET_CREATED
+  TICKET_ASSIGNED
+  STATUS_UPDATE
+  COMMENT_ADDED
+  SLA_WARNING
+  ESCALATION
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String
+  role           UserRole
+  phone          String?
+  avatarUrl      String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tenantUnit     Unit?     @relation("TenantUnit", fields: [tenantUnitId], references: [id])
+  tenantUnitId   String?
+  createdTickets   Ticket[]       @relation("TicketCreator")
+  assignedTickets  Ticket[]       @relation("TicketAssignee")
+  activities       ActivityLog[]
+  comments         Comment[]
+  notifications    Notification[]
+  managedProperties Property[]     @relation("PropertyManager")
+  specialties    TicketCategory[]
+  @@index([role])
+  @@index([email])
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  manager     User?    @relation("PropertyManager", fields: [managerId], references: [id])
+  managerId   String?
+  buildings   Building[]
+  tickets     Ticket[]
+  @@index([managerId])
+}
+
+model Building {
+  id          String   @id @default(cuid())
+  name        String
+  floors      Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  units       Unit[]
+  @@index([propertyId])
+}
+
+model Unit {
+  id          String   @id @default(cuid())
+  number      String
+  floor       Int      @default(1)
+  bedrooms    Int      @default(1)
+  bathrooms   Int      @default(1)
+  sqft        Int?
+  isOccupied  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  buildingId  String
+  tenants     User[]   @relation("TenantUnit")
+  tickets     Ticket[]
+  @@unique([buildingId, number])
+  @@index([buildingId])
+}
+
+model Ticket {
+  id              String         @id @default(cuid())
+  title           String
+  description     String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(ROUTINE)
+  category        TicketCategory @default(GENERAL)
+  permissionToEnter  Boolean     @default(false)
+  preferredTimes     String?
+  estimatedCost      Float?
+  actualCost         Float?
+  resolution         String?
+  slaDeadline     DateTime?
+  slaBroken       Boolean      @default(false)
+  acknowledgedAt  DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  verifiedAt      DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  property        Property     @relation(fields: [propertyId], references: [id])
+  propertyId      String
+  unit            Unit         @relation(fields: [unitId], references: [id])
+  unitId          String
+  createdBy       User         @relation("TicketCreator", fields: [createdById], references: [id])
+  createdById     String
+  assignedTo      User?        @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  assignedToId    String?
+  attachments     Attachment[]
+  activities      ActivityLog[]
+  comments        Comment[]
+  notifications   Notification[]
+  @@index([status])
+  @@index([priority])
+  @@index([propertyId])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([createdAt])
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  createdAt   DateTime @default(now())
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  @@index([ticketId])
+}
+
+model ActivityLog {
+  id             String         @id @default(cuid())
+  action         ActivityAction
+  description    String
+  previousValue  String?
+  newValue       String?
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  ticket         Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId       String
+  performedBy    User           @relation(fields: [performedById], references: [id])
+  performedById  String
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  isInternal  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  ticket    Ticket?          @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  ticketId  String?
+  @@index([userId, read])
+  @@index([createdAt])
+}
