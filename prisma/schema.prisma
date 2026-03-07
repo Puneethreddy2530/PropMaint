@@ -259,6 +259,7 @@ model ActivityLog {
   previousValue  String?                         // For tracking changes
   newValue       String?
   metadata       Json?                           // Flexible extra data
+  hash           String?                         // Cryptographic audit property
   createdAt      DateTime       @default(now())
 
   // Relations

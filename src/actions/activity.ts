@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import crypto from "crypto";
 import { ActivityAction, NotificationType, Prisma } from "@prisma/client";
 
 interface LogActivityParams {
@@ -13,10 +14,34 @@ interface LogActivityParams {
   metadata?: Record<string, unknown>;
 }
 
+// A helper function to hash the previous log entry with the new one
+function generateLogHash(previousHash: string | null, newData: any) {
+  const dataString = JSON.stringify({ prev: previousHash, data: newData });
+  return crypto.createHash("sha256").update(dataString).digest("hex");
+}
+
 /**
  * Log an activity to a ticket's audit trail
  */
 export async function logActivity(params: LogActivityParams) {
+  // 1. Get the most recent log for this ticket
+  const lastLog = await prisma.activityLog.findFirst({
+    where: { ticketId: params.ticketId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const previousHash = lastLog?.hash || null;
+  const newHash = generateLogHash(previousHash, {
+    ticketId: params.ticketId,
+    userId: params.performedById,
+    action: params.action,
+    description: params.description,
+    previousValue: params.previousValue,
+    newValue: params.newValue,
+    metadata: params.metadata,
+  });
+
+  // 2. Create the new tamper-proof log
   return prisma.activityLog.create({
     data: {
       ticketId: params.ticketId,
@@ -26,6 +51,7 @@ export async function logActivity(params: LogActivityParams) {
       previousValue: params.previousValue || null,
       newValue: params.newValue || null,
       metadata: params.metadata ? (params.metadata as Prisma.InputJsonValue) : undefined,
+      hash: newHash, // The new chained hash
     },
   });
 }
