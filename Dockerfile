@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
 RUN npm ci
 
 # Rebuild the source code only when needed
@@ -23,7 +24,7 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -47,8 +48,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Run Prisma migrations before starting the app
-CMD npx prisma db push && node server.js
+CMD ["sh", "-c", "npx prisma db push && node server.js"]
