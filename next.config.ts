@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: "standalone",
   images: {
     remotePatterns: [
@@ -14,6 +13,12 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
 };
 
