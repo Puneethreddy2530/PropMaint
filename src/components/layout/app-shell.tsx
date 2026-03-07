@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/actions/auth";
+import { ThemeToggle } from "./theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
     LayoutDashboard, Ticket, PlusCircle, Bell, User, BarChart3,
@@ -47,10 +48,11 @@ export function AppShell({ children, user, unreadCount }: AppShellProps) {
                         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground">
                             <Building2 className="w-5 h-5" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <h1 className="font-bold text-lg leading-none">PropMaint</h1>
                             <p className="text-xs text-muted-foreground mt-0.5">Maintenance Hub</p>
                         </div>
+                        <ThemeToggle />
                     </div>
 
                     {/* User info */}
@@ -112,7 +114,8 @@ export function AppShell({ children, user, unreadCount }: AppShellProps) {
                             </div>
                             <span className="font-bold">PropMaint</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                            <ThemeToggle />
                             <Link href="/notifications" className="relative p-2">
                                 <Bell className="w-5 h-5 text-muted-foreground" />
                                 {unreadCount > 0 && (
