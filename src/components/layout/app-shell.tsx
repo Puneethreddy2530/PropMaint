@@ -11,6 +11,7 @@ import {
     Users, Building2, LogOut, Wrench,
 } from "lucide-react";
 import type { UserRole } from "@prisma/client";
+import { OfflineBanner } from "./offline-banner";
 
 interface NavItem { href: string; label: string; icon: React.ReactNode; roles: UserRole[]; }
 
@@ -40,8 +41,12 @@ export function AppShell({ children, user, unreadCount }: AppShellProps) {
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row">
+            <div className="fixed top-0 left-0 right-0 z-[100]">
+                <OfflineBanner />
+            </div>
+
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r bg-card z-30">
+            <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r bg-card z-30 pt-6">
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center gap-3 px-6 py-5 border-b">
