@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/form-elements";
 import { createTicket } from "@/actions/tickets";
 import { CATEGORY_CONFIG } from "@/lib/permissions";
-import { AlertTriangle, Loader2, ChevronRight, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Loader2, ChevronRight, ChevronLeft, CheckCircle2, Mic, MicOff } from "lucide-react";
 import { toast } from "sonner";
+import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 
 interface Property {
     id: string; name: string;
@@ -30,6 +31,15 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
     const [priority, setPriority] = useState("ROUTINE");
     const [permissionToEnter, setPermissionToEnter] = useState(false);
     const [preferredTimes, setPreferredTimes] = useState("");
+
+    const { isListening, transcript, toggleListening, clearTranscript, hasSupport } = useSpeechRecognition();
+
+    useEffect(() => {
+        if (transcript) {
+            setDescription(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + transcript);
+            clearTranscript();
+        }
+    }, [transcript, clearTranscript]);
 
     // Derived state
     const selectedProperty = properties.find(p => p.id === propertyId);
@@ -149,8 +159,20 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                             </div>
                             <div className="space-y-2">
                                 <Label>Description</Label>
-                                <Textarea value={description} onChange={e => setDescription(e.target.value)}
-                                    placeholder="Describe the issue in detail. When did it start? How severe is it? What have you tried?" rows={4} maxLength={2000} />
+                                <div className="relative">
+                                    <Textarea value={description} onChange={e => setDescription(e.target.value)}
+                                        placeholder="Describe the issue in detail. When did it start? How severe is it? What have you tried?" rows={4} maxLength={2000} />
+                                    {hasSupport && (
+                                        <button
+                                            type="button"
+                                            onClick={toggleListening}
+                                            className={`absolute right-2 bottom-2 p-2 rounded-full transition-colors ${isListening ? "bg-red-500 text-white animate-pulse" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                                }`}
+                                        >
+                                            {isListening ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                                        </button>
+                                    )}
+                                </div>
                                 <p className="text-xs text-muted-foreground">{description.length}/2000</p>
                             </div>
                             {!isEmergency && (
