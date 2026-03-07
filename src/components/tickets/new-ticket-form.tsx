@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/form-elements";
 import { createTicket } from "@/actions/tickets";
 import { CATEGORY_CONFIG } from "@/lib/permissions";
-import { AlertTriangle, Loader2, ChevronRight, ChevronLeft, CheckCircle2, Mic, MicOff } from "lucide-react";
+import { AlertTriangle, Loader2, ChevronRight, ChevronLeft, CheckCircle2, Mic, MicOff, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
+import { useAITriage } from "@/lib/useAITriage";
 
 interface Property {
     id: string; name: string;
@@ -40,6 +41,28 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
             clearTranscript();
         }
     }, [transcript, clearTranscript]);
+
+    const { analyzeIssue, result, isProcessing } = useAITriage();
+
+    useEffect(() => {
+        if (result && result.labels && result.labels.length > 0) {
+            // Find a matching category in CATEGORY_CONFIG based on the AI label
+            const topLabel = result.labels[0].toUpperCase();
+
+            // Map AI label to our enums if needed
+            let matchedCategory = "";
+            if (topLabel.includes("PLUMB") || topLabel.includes("LEAK")) matchedCategory = "PLUMBING";
+            else if (topLabel.includes("ELECT")) matchedCategory = "ELECTRICAL";
+            else if (topLabel.includes("APPLI")) matchedCategory = "APPLIANCE";
+            else if (topLabel.includes("STRUCT")) matchedCategory = "STRUCTURAL";
+            else if (topLabel.includes("SECUR") || topLabel.includes("FIRE")) matchedCategory = "SAFETY";
+            else matchedCategory = "GENERAL";
+
+            if (Object.keys(CATEGORY_CONFIG).includes(matchedCategory)) {
+                setCategory(matchedCategory);
+            }
+        }
+    }, [result]);
 
     // Derived state
     const selectedProperty = properties.find(p => p.id === propertyId);
@@ -173,7 +196,24 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                                         </button>
                                     )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">{description.length}/2000</p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs text-muted-foreground">{description.length}/2000</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => analyzeIssue(description)}
+                                        disabled={isProcessing || description.length < 10}
+                                        className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Sparkles className={`h-4 w-4 ${isProcessing ? 'animate-spin' : ''}`} />
+                                        {isProcessing ? 'AI is analyzing...' : 'AI Auto-Categorize'}
+                                    </button>
+                                </div>
+                                {result && (
+                                    <div className="mt-2 p-3 bg-green-50 text-green-800 text-sm rounded-md border border-green-200">
+                                        <strong>AI Suggestion:</strong> Looks like a <b>{result.labels[0]}</b> issue.
+                                        Confidence: {Math.round(result.scores[0] * 100)}%
+                                    </div>
+                                )}
                             </div>
                             {!isEmergency && (
                                 <div className="space-y-2">
