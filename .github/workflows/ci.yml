@@ -30,7 +30,7 @@ jobs:
       continue-on-error: true
       
     - name: Run ESLint
-      run: npm run lint
+      run: npx eslint src --no-error-on-unmatched-pattern
       continue-on-error: true
       
     # Uncomment when Vitest is configured
