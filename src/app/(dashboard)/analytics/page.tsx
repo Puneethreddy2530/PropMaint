@@ -9,7 +9,7 @@ export default async function AnalyticsPage() {
     if (session?.user?.role !== "MANAGER") redirect("/dashboard");
 
     const managerId = session.user.id;
-    const where = { property: { managerId } };
+    const where = { property: { managerId }, deletedAt: null };
 
     const [total, byStatus, byPriority, byCategory, avgResolution] = await Promise.all([
         prisma.ticket.count({ where }),

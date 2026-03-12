@@ -90,7 +90,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
 
         const result = await createTicket(fd);
         setLoading(false);
-        if (result?.error) { setError(result.error); toast.error(result.error); }
+        if (result && "error" in result) { setError(result.message); toast.error(result.message); }
     }
 
     const canNext = step === 1 ? propertyId && unitId
@@ -135,7 +135,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                             <div className="space-y-2">
                                 <Label>Property</Label>
                                 <Select value={propertyId} onValueChange={v => { setPropertyId(v); setUnitId(""); }}>
-                                    <SelectTrigger><SelectValue placeholder="Select property..." /></SelectTrigger>
+                                    <SelectTrigger data-testid="ticket-property-select"><SelectValue placeholder="Select property..." /></SelectTrigger>
                                     <SelectContent>
                                         {properties.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                     </SelectContent>
@@ -145,7 +145,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                                 <div className="space-y-2">
                                     <Label>Unit</Label>
                                     <Select value={unitId} onValueChange={setUnitId}>
-                                        <SelectTrigger><SelectValue placeholder="Select unit..." /></SelectTrigger>
+                                        <SelectTrigger data-testid="ticket-unit-select"><SelectValue placeholder="Select unit..." /></SelectTrigger>
                                         <SelectContent>
                                             {allUnits.map(u => (
                                                 <SelectItem key={u.id} value={u.id}>{u.buildingName} — Unit {u.number}</SelectItem>
@@ -161,7 +161,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                     {step === 2 && (
                         <div className="grid grid-cols-2 gap-3">
                             {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
-                                <button key={key} onClick={() => setCategory(key)}
+                                <button key={key} onClick={() => setCategory(key)} data-testid={`ticket-category-${key}`}
                                     className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${category === key ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"
                                         }`}>
                                     <span className="text-2xl">{cfg.emoji}</span>
@@ -176,14 +176,14 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Title</Label>
-                                <Input value={title} onChange={e => setTitle(e.target.value)}
+                                <Input data-testid="ticket-title-input" value={title} onChange={e => setTitle(e.target.value)}
                                     placeholder="Brief description, e.g. 'Leaking kitchen faucet'" maxLength={200} />
                                 <p className="text-xs text-muted-foreground">{title.length}/200</p>
                             </div>
                             <div className="space-y-2">
                                 <Label>Description</Label>
                                 <div className="relative">
-                                    <Textarea value={description} onChange={e => setDescription(e.target.value)}
+                                    <Textarea data-testid="ticket-description-input" value={description} onChange={e => setDescription(e.target.value)}
                                         placeholder="Describe the issue in detail. When did it start? How severe is it? What have you tried?" rows={4} maxLength={2000} />
                                     {hasSupport && (
                                         <button
@@ -208,12 +208,12 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                                         {isProcessing ? 'AI is analyzing...' : 'AI Auto-Categorize'}
                                     </button>
                                 </div>
-                                {result && (
+                                {result?.labels?.length && result.scores?.length ? (
                                     <div className="mt-2 p-3 bg-green-50 text-green-800 text-sm rounded-md border border-green-200">
                                         <strong>AI Suggestion:</strong> Looks like a <b>{result.labels[0]}</b> issue.
-                                        Confidence: {Math.round(result.scores[0] * 100)}%
+                                        Confidence: {Math.round((result.scores[0] || 0) * 100)}%
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                             {!isEmergency && (
                                 <div className="space-y-2">
@@ -247,7 +247,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
 
                             <div className="space-y-3 pt-2 border-t">
                                 <div className="flex items-center gap-3">
-                                    <input type="checkbox" id="pte" checked={permissionToEnter} onChange={e => setPermissionToEnter(e.target.checked)}
+                                    <input type="checkbox" id="pte" data-testid="ticket-permission" checked={permissionToEnter} onChange={e => setPermissionToEnter(e.target.checked)}
                                         className="w-4 h-4 rounded border-input" />
                                     <Label htmlFor="pte" className="text-sm font-normal">Permission to enter unit when I&apos;m not home</Label>
                                 </div>
@@ -273,11 +273,11 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                 ) : <div />}
 
                 {step < totalSteps ? (
-                    <Button onClick={() => setStep(s => s + 1)} disabled={!canNext} className="gap-1">
+                    <Button onClick={() => setStep(s => s + 1)} disabled={!canNext} className="gap-1" data-testid="ticket-next-step">
                         Next <ChevronRight className="w-4 h-4" />
                     </Button>
                 ) : (
-                    <Button onClick={handleSubmit} disabled={loading} className="gap-1">
+                    <Button onClick={handleSubmit} disabled={loading} className="gap-1" data-testid="ticket-submit">
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                         Submit Request
                     </Button>
@@ -295,3 +295,4 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
         </div>
     );
 }
+

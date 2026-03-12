@@ -2,8 +2,9 @@
 
 import { signIn, signOut } from "@/lib/auth";
 import { AuthError } from "next-auth";
+import type { ActionResult } from "@/types/action";
 
-export async function loginAction(formData: FormData) {
+export async function loginAction(formData: FormData): Promise<ActionResult> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -13,16 +14,18 @@ export async function loginAction(formData: FormData) {
       password,
       redirectTo: "/dashboard",
     });
+
+    return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Invalid email or password" };
+          return { error: "UNAUTHORIZED", message: "Invalid email or password" };
         default:
-          return { error: "Something went wrong. Please try again." };
+          return { error: "INTERNAL", message: "Something went wrong. Please try again." };
       }
     }
-    throw error;
+    return { error: "INTERNAL", message: "Something went wrong. Please try again." };
   }
 }
 
@@ -30,7 +33,7 @@ export async function logoutAction() {
   await signOut({ redirectTo: "/login" });
 }
 
-export async function quickLoginAction(role: "tenant" | "manager" | "staff") {
+export async function quickLoginAction(role: "tenant" | "manager" | "staff"): Promise<ActionResult> {
   const emails: Record<string, string> = {
     tenant: "sarah.johnson@demo.com",
     manager: "michael.chen@demo.com",
@@ -43,10 +46,12 @@ export async function quickLoginAction(role: "tenant" | "manager" | "staff") {
       password: "demo123",
       redirectTo: "/dashboard",
     });
+
+    return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Demo login failed. Please seed the database first." };
+      return { error: "UNAUTHORIZED", message: "Demo login failed. Please seed the database first." };
     }
-    throw error;
+    return { error: "INTERNAL", message: "Something went wrong. Please try again." };
   }
 }

@@ -10,6 +10,12 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
 
+# Seed image (runs migrations + seed)
+FROM deps AS seed
+WORKDIR /app
+COPY scripts ./scripts
+CMD ["sh", "./scripts/init-db.sh"]
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
@@ -52,4 +58,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Run Prisma migrations before starting the app
-CMD ["sh", "-c", "npx prisma db push && node server.js"]
+CMD ["node", "server.js"]

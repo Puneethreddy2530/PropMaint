@@ -1,4 +1,5 @@
 import { UserRole, TicketStatus, TicketPriority, TicketCategory } from "@prisma/client";
+import type { BadgeVariant } from "@/components/ui/badge";
 
 export const PERMISSIONS = {
   "ticket:create": [UserRole.TENANT, UserRole.MANAGER],
@@ -32,7 +33,7 @@ export function calculateSLADeadline(createdAt: Date, priority: string): Date {
   return new Date(createdAt.getTime() + hours * 60 * 60 * 1000);
 }
 
-export const STATUS_CONFIG: Record<TicketStatus, { label: string; variant: string; color: string }> = {
+export const STATUS_CONFIG: Record<TicketStatus, { label: string; variant: BadgeVariant; color: string }> = {
   OPEN: { label: "Open", variant: "open", color: "#f59e0b" },
   ASSIGNED: { label: "Assigned", variant: "assigned", color: "#3b82f6" },
   IN_PROGRESS: { label: "In Progress", variant: "inProgress", color: "#6366f1" },
@@ -42,7 +43,7 @@ export const STATUS_CONFIG: Record<TicketStatus, { label: string; variant: strin
   CLOSED: { label: "Closed", variant: "closed", color: "#94a3b8" },
 };
 
-export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; variant: string; color: string; slaHours: number }> = {
+export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; variant: BadgeVariant; color: string; slaHours: number }> = {
   EMERGENCY: { label: "Emergency", variant: "emergency", color: "#dc2626", slaHours: 2 },
   URGENT: { label: "Urgent", variant: "urgent", color: "#f59e0b", slaHours: 24 },
   ROUTINE: { label: "Routine", variant: "routine", color: "#3b82f6", slaHours: 72 },

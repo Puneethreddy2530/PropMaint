@@ -88,6 +88,7 @@ model User {
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
 
   // Relations
   tenantUnit     Unit?     @relation("TenantUnit", fields: [tenantUnitId], references: [id])
@@ -111,6 +112,7 @@ model User {
 
   @@index([role])
   @@index([email])
+  @@index([deletedAt])
 }
 
 // ============================================================================
@@ -184,6 +186,7 @@ model Ticket {
   status          TicketStatus   @default(OPEN)
   priority        TicketPriority @default(ROUTINE)
   category        TicketCategory @default(GENERAL)
+  version         Int            @default(1)
 
   // Workflow fields
   permissionToEnter  Boolean     @default(false)
@@ -203,6 +206,7 @@ model Ticket {
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
 
   // Relations
   property        Property     @relation(fields: [propertyId], references: [id])
@@ -227,6 +231,7 @@ model Ticket {
   @@index([assignedToId])
   @@index([createdAt])
   @@index([slaDeadline])
+  @@index([deletedAt])
 }
 
 // ============================================================================

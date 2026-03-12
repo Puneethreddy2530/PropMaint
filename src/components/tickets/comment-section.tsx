@@ -41,7 +41,7 @@ export function CommentSection({ ticketId, comments, canComment, canInternalNote
         fd.set("isInternal", String(isInternal));
         const result = await addComment(fd);
         setLoading(false);
-        if (result?.error) toast.error(result.error);
+        if (result && "error" in result) toast.error(result.message);
         else { setContent(""); toast.success(isInternal ? "Internal note added" : "Comment posted"); }
     }
 

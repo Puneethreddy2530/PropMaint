@@ -143,18 +143,18 @@ export function AppShell({ children, user, unreadCount }: AppShellProps) {
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-lg border-t">
-                <div className="flex items-center justify-around px-2 py-1">
+                <div className="flex items-center justify-around px-1 py-1">
                     {filteredNav.slice(0, 5).map(item => {
                         const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                         const isNewButton = item.href === "/tickets/new";
                         return (
                             <Link key={item.href} href={item.href}
                                 className={cn(
-                                    "flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-colors min-w-[56px]",
+                                    "flex flex-col items-center gap-0.5 py-3 px-4 rounded-xl transition-all active:scale-95 min-w-[64px]",
                                     isNewButton ? "" : isActive ? "text-primary" : "text-muted-foreground"
                                 )}>
                                 {isNewButton ? (
-                                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 -mt-4">
+                                    <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 -mt-5">
                                         <PlusCircle className="w-5 h-5" />
                                     </div>
                                 ) : (

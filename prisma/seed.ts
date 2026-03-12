@@ -36,6 +36,17 @@ async function main() {
     },
   });
 
+  const manager2 = await prisma.user.create({
+    data: {
+      email: "olivia.davis@demo.com",
+      name: "Olivia Davis",
+      passwordHash: password,
+      role: UserRole.MANAGER,
+      phone: "+1 (555) 100-3000",
+      avatarUrl: null,
+    },
+  });
+
   const staff1 = await prisma.user.create({
     data: {
       email: "james.rodriguez@demo.com",
@@ -69,7 +80,29 @@ async function main() {
     },
   });
 
-  console.log("✅ Created users (1 manager, 3 staff)");
+  const staff4 = await prisma.user.create({
+    data: {
+      email: "sofia.patel@demo.com",
+      name: "Sofia Patel",
+      passwordHash: password,
+      role: UserRole.STAFF,
+      phone: "+1 (555) 200-6000",
+      specialties: [TicketCategory.ELECTRICAL, TicketCategory.SAFETY],
+    },
+  });
+
+  const staff5 = await prisma.user.create({
+    data: {
+      email: "liam.brown@demo.com",
+      name: "Liam Brown",
+      passwordHash: password,
+      role: UserRole.STAFF,
+      phone: "+1 (555) 200-7000",
+      specialties: [TicketCategory.APPLIANCE, TicketCategory.PEST_CONTROL],
+    },
+  });
+
+  console.log("✅ Created users (2 managers, 5 staff)");
 
   // ========================================================================
   // PROPERTIES
@@ -104,7 +137,7 @@ async function main() {
       city: "Austin",
       state: "TX",
       zipCode: "73301",
-      managerId: manager.id,
+      managerId: manager2.id,
     },
   });
 
@@ -202,33 +235,11 @@ async function main() {
       passwordHash: password,
       role: UserRole.TENANT,
       phone: "+1 (555) 300-3000",
-      tenantUnitId: units["B-101"].id,
-    },
-  });
-
-  const tenant4 = await prisma.user.create({
-    data: {
-      email: "robert.lee@demo.com",
-      name: "Robert Lee",
-      passwordHash: password,
-      role: UserRole.TENANT,
-      phone: "+1 (555) 300-4000",
       tenantUnitId: units["TH-1"].id,
     },
   });
 
-  const tenant5 = await prisma.user.create({
-    data: {
-      email: "priya.patel@demo.com",
-      name: "Priya Patel",
-      passwordHash: password,
-      role: UserRole.TENANT,
-      phone: "+1 (555) 300-5000",
-      tenantUnitId: units["A-301"].id,
-    },
-  });
-
-  console.log("✅ Created 5 tenants");
+  console.log("✅ Created 3 tenants");
 
   // ========================================================================
   // TICKETS — Realistic scenarios across all statuses
@@ -286,8 +297,8 @@ async function main() {
       status: TicketStatus.ASSIGNED,
       priority: TicketPriority.ROUTINE,
       category: TicketCategory.HVAC,
-      propertyId: property1.id,
-      unitId: units["B-101"].id,
+      propertyId: property3.id,
+      unitId: units["TH-1"].id,
       createdById: tenant3.id,
       assignedToId: staff1.id,
       permissionToEnter: true,
@@ -307,8 +318,8 @@ async function main() {
       priority: TicketPriority.ROUTINE,
       category: TicketCategory.APPLIANCE,
       propertyId: property3.id,
-      unitId: units["TH-1"].id,
-      createdById: tenant4.id,
+      unitId: units["TH-2"].id,
+      createdById: tenant3.id,
       assignedToId: staff2.id,
       permissionToEnter: true,
       estimatedCost: 200,
@@ -332,7 +343,7 @@ async function main() {
       category: TicketCategory.ELECTRICAL,
       propertyId: property1.id,
       unitId: units["A-301"].id,
-      createdById: tenant5.id,
+      createdById: tenant1.id,
       assignedToId: staff2.id,
       permissionToEnter: false,
       estimatedCost: 80,
@@ -380,7 +391,7 @@ async function main() {
       category: TicketCategory.PEST_CONTROL,
       propertyId: property1.id,
       unitId: units["A-102"].id,
-      createdById: tenant5.id,
+      createdById: tenant1.id,
       permissionToEnter: true,
       preferredTimes: "Weekdays, anytime",
       slaDeadline: new Date(now.getTime() + 24 * 60 * 60 * 1000),
@@ -427,7 +438,28 @@ async function main() {
     },
   });
 
-  console.log("✅ Created 9 tickets across all statuses");
+  // Ticket 10: IN_PROGRESS — Window latch broken
+  const ticket10 = await prisma.ticket.create({
+    data: {
+      title: "Bedroom window won't latch",
+      description: "The bedroom window no longer latches shut. It feels loose and won't lock, which is a security concern. The frame might be warped.",
+      status: TicketStatus.IN_PROGRESS,
+      priority: TicketPriority.ROUTINE,
+      category: TicketCategory.STRUCTURAL,
+      propertyId: property2.id,
+      unitId: units["301"].id,
+      createdById: tenant2.id,
+      assignedToId: staff4.id,
+      permissionToEnter: true,
+      preferredTimes: "Weekdays after 4pm",
+      slaDeadline: new Date(daysAgo(1).getTime() + 72 * 60 * 60 * 1000),
+      acknowledgedAt: daysAgo(1),
+      startedAt: hoursAgo(6),
+      createdAt: daysAgo(2),
+    },
+  });
+
+  console.log("✅ Created 10 tickets across all statuses");
 
   // ========================================================================
   // ACTIVITY LOGS — Realistic timelines
@@ -458,8 +490,8 @@ async function main() {
 
   // Activities for ticket 4 (completed garbage disposal)
   const t4Activities = [
-    { action: ActivityAction.TICKET_CREATED, desc: "Robert Lee submitted a new routine appliance request", at: daysAgo(5), by: tenant4.id },
-    { action: ActivityAction.ASSIGNED, desc: "Michael Chen assigned this ticket to Emily Wang", at: daysAgo(4), by: manager.id },
+    { action: ActivityAction.TICKET_CREATED, desc: "Maria Garcia submitted a new routine appliance request", at: daysAgo(5), by: tenant3.id },
+    { action: ActivityAction.ASSIGNED, desc: "Olivia Davis assigned this ticket to Emily Wang", at: daysAgo(4), by: manager2.id },
     { action: ActivityAction.STATUS_CHANGED, desc: "Emily Wang changed status from Assigned to In Progress", at: daysAgo(3), by: staff2.id, prev: "ASSIGNED", next: "IN_PROGRESS" },
     { action: ActivityAction.COMMENT_ADDED, desc: "Emily Wang added a comment", at: daysAgo(2), by: staff2.id },
     { action: ActivityAction.STATUS_CHANGED, desc: "Emily Wang changed status from In Progress to Completed", at: daysAgo(1), by: staff2.id, prev: "IN_PROGRESS", next: "COMPLETED" },
@@ -481,11 +513,11 @@ async function main() {
 
   // Activities for ticket 5 (closed light fixture)
   const t5Activities = [
-    { action: ActivityAction.TICKET_CREATED, desc: "Priya Patel submitted a new routine electrical request", at: daysAgo(10), by: tenant5.id },
+    { action: ActivityAction.TICKET_CREATED, desc: "Sarah Johnson submitted a new routine electrical request", at: daysAgo(10), by: tenant1.id },
     { action: ActivityAction.ASSIGNED, desc: "Michael Chen assigned this ticket to Emily Wang", at: daysAgo(9), by: manager.id },
     { action: ActivityAction.STATUS_CHANGED, desc: "Emily Wang changed status to In Progress", at: daysAgo(8), by: staff2.id, prev: "ASSIGNED", next: "IN_PROGRESS" },
     { action: ActivityAction.STATUS_CHANGED, desc: "Emily Wang marked as Completed", at: daysAgo(7), by: staff2.id, prev: "IN_PROGRESS", next: "COMPLETED" },
-    { action: ActivityAction.STATUS_CHANGED, desc: "Priya Patel verified the repair", at: daysAgo(6), by: tenant5.id, prev: "COMPLETED", next: "VERIFIED" },
+    { action: ActivityAction.STATUS_CHANGED, desc: "Sarah Johnson verified the repair", at: daysAgo(6), by: tenant1.id, prev: "COMPLETED", next: "VERIFIED" },
     { action: ActivityAction.STATUS_CHANGED, desc: "Michael Chen closed this ticket", at: daysAgo(6), by: manager.id, prev: "VERIFIED", next: "CLOSED" },
   ];
 
@@ -511,6 +543,17 @@ async function main() {
       action: ActivityAction.TICKET_CREATED,
       description: "Sarah Johnson submitted an emergency safety request",
       createdAt: hoursAgo(1),
+    },
+  });
+
+  // Activities for ticket 10 (window latch)
+  await prisma.activityLog.create({
+    data: {
+      ticketId: ticket10.id,
+      performedById: tenant2.id,
+      action: ActivityAction.TICKET_CREATED,
+      description: "Alex Thompson submitted a routine structural request",
+      createdAt: daysAgo(2),
     },
   });
 
@@ -617,7 +660,7 @@ async function main() {
   await prisma.comment.create({
     data: {
       ticketId: ticket4.id,
-      authorId: tenant4.id,
+      authorId: tenant3.id,
       content: "Sounds good, thank you for the quick response!",
       isInternal: false,
       createdAt: daysAgo(2),
@@ -654,15 +697,15 @@ async function main() {
   const notifications = [
     // Manager notifications
     { userId: manager.id, ticketId: ticket1.id, type: NotificationType.TICKET_CREATED, title: "🚨 Emergency Request", message: "Sarah Johnson reported a gas smell in Unit A-201 at Sunset Ridge Apartments", read: false, at: hoursAgo(1) },
-    { userId: manager.id, ticketId: ticket7.id, type: NotificationType.TICKET_CREATED, title: "New Urgent Request", message: "Priya Patel reported an ant infestation in Unit A-102", read: false, at: hoursAgo(6) },
-    { userId: manager.id, ticketId: ticket4.id, type: NotificationType.STATUS_UPDATE, title: "Work Completed", message: "Garbage disposal repair in TH-1 completed — needs verification", read: true, at: daysAgo(1) },
+    { userId: manager.id, ticketId: ticket7.id, type: NotificationType.TICKET_CREATED, title: "New Urgent Request", message: "Sarah Johnson reported an ant infestation in Unit A-102", read: false, at: hoursAgo(6) },
+    { userId: manager2.id, ticketId: ticket4.id, type: NotificationType.STATUS_UPDATE, title: "Work Completed", message: "Garbage disposal repair in TH-2 completed — needs verification", read: true, at: daysAgo(1) },
     { userId: manager.id, ticketId: ticket9.id, type: NotificationType.SLA_WARNING, title: "⚠️ SLA Breached", message: "Ceiling water stain ticket exceeded 24-hour SLA", read: false, at: daysAgo(1) },
 
     // Tenant notifications
     { userId: tenant2.id, ticketId: ticket2.id, type: NotificationType.STATUS_UPDATE, title: "Request In Progress", message: "Your kitchen faucet repair is now in progress", read: true, at: hoursAgo(4) },
     { userId: tenant2.id, ticketId: ticket2.id, type: NotificationType.COMMENT_ADDED, title: "New Comment", message: "James Rodriguez commented on your faucet repair request", read: false, at: hoursAgo(3) },
-    { userId: tenant4.id, ticketId: ticket4.id, type: NotificationType.STATUS_UPDATE, title: "Repair Completed", message: "Your garbage disposal has been repaired — please verify", read: false, at: daysAgo(1) },
-    { userId: tenant5.id, ticketId: ticket5.id, type: NotificationType.STATUS_UPDATE, title: "Ticket Closed", message: "Your light fixture repair has been completed and closed", read: true, at: daysAgo(6) },
+    { userId: tenant3.id, ticketId: ticket4.id, type: NotificationType.STATUS_UPDATE, title: "Repair Completed", message: "Your garbage disposal has been repaired — please verify", read: false, at: daysAgo(1) },
+    { userId: tenant1.id, ticketId: ticket5.id, type: NotificationType.STATUS_UPDATE, title: "Ticket Closed", message: "Your light fixture repair has been completed and closed", read: true, at: daysAgo(6) },
 
     // Staff notifications
     { userId: staff1.id, ticketId: ticket3.id, type: NotificationType.TICKET_ASSIGNED, title: "New Assignment", message: "You've been assigned to AC repair in Unit B-101", read: true, at: daysAgo(1) },
@@ -705,9 +748,9 @@ async function main() {
   console.log("└─────────────┴──────────────────────────┴──────────┘");
   console.log("\n📊 Data Summary:");
   console.log(`   Properties: 3 | Buildings: 4 | Units: 11`);
-  console.log(`   Users: 9 (1 manager, 3 staff, 5 tenants)`);
-  console.log(`   Tickets: 9 (across all statuses)`);
-  console.log(`   Activity Logs: ${t2Activities.length + t4Activities.length + t5Activities.length + t6Activities.length + t9Activities.length + 1}`);
+  console.log(`   Users: 10 (2 managers, 5 staff, 3 tenants)`);
+  console.log(`   Tickets: 10 (across all statuses)`);
+  console.log(`   Activity Logs: ${t2Activities.length + t4Activities.length + t5Activities.length + t6Activities.length + t9Activities.length + 2}`);
   console.log(`   Comments: 7 (including internal notes)`);
   console.log(`   Notifications: ${notifications.length}`);
 }

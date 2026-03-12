@@ -133,8 +133,19 @@ npm run dev
 
 ```bash
 docker compose up --build
-# Then seed: docker compose exec app npx tsx prisma/seed.ts
+# DB is auto-seeded on startup (3 tenants, 2 managers, 5 technicians, 10 tickets)
 # Open http://localhost:3000
+```
+
+### Testing
+
+```bash
+# Unit tests (RBAC)
+npm run test:unit
+
+# E2E tests (Playwright)
+# First time: npx playwright install
+npm run test:e2e
 ```
 
 ---

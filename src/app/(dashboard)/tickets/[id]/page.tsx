@@ -50,8 +50,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     <div className="flex-1">
                         <h1 className="text-xl font-bold tracking-tight">{ticket.title}</h1>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <Badge variant={statusCfg.variant as any}>{statusCfg.label}</Badge>
-                            <Badge variant={priorityCfg.variant as any}>{priorityCfg.label}</Badge>
+                            <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
+                            <Badge variant={priorityCfg.variant}>{priorityCfg.label}</Badge>
                             <span className="text-xs text-muted-foreground">#{ticket.id.slice(-6)}</span>
                         </div>
                     </div>
@@ -112,6 +112,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     {/* Actions */}
                     <TicketActions
                         ticketId={ticket.id}
+                        ticketVersion={ticket.version}
                         currentStatus={ticket.status}
                         nextStatuses={nextStatuses}
                         staffMembers={staffMembers}

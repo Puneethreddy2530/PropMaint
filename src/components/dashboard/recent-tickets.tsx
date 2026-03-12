@@ -58,7 +58,7 @@ export function RecentTickets({ tickets }: RecentTicketsProps) {
                                     </p>
                                 </div>
                                 <div className="ml-auto flex flex-col items-end gap-1">
-                                    <Badge variant={(STATUS_CONFIG[ticket.status as keyof typeof STATUS_CONFIG]?.variant || "secondary") as any}>
+                                    <Badge variant={STATUS_CONFIG[ticket.status as keyof typeof STATUS_CONFIG]?.variant || "secondary"}>
                                         {STATUS_CONFIG[ticket.status as keyof typeof STATUS_CONFIG]?.label || ticket.status}
                                     </Badge>
                                     <span className="text-xs text-muted-foreground">

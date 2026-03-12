@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
+
+interface TriageResult {
+    labels?: string[];
+    scores?: number[];
+}
+
+type WorkerMessage =
+    | { status: "init" | "progress"; progress?: number }
+    | { status: "complete"; output?: TriageResult };
 
 export function useAITriage() {
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<TriageResult | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const worker = useRef<Worker | null>(null);
@@ -11,19 +20,19 @@ export function useAITriage() {
     useEffect(() => {
         if (!worker.current) {
             // Initialize the worker
-            worker.current = new Worker(new URL('./ai-worker.ts', import.meta.url), {
-                type: 'module'
+            worker.current = new Worker(new URL("./ai-worker.ts", import.meta.url), {
+                type: "module",
             });
         }
 
-        const onMessageReceived = (e: MessageEvent) => {
+        const onMessageReceived = (e: MessageEvent<WorkerMessage>) => {
             switch (e.data.status) {
-                case 'init':
-                case 'progress':
+                case "init":
+                case "progress":
                     setProgress(e.data.progress || 0);
                     break;
-                case 'complete':
-                    setResult(e.data.output);
+                case "complete":
+                    setResult(e.data.output || null);
                     setIsProcessing(false);
                     break;
             }

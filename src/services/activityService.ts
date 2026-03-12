@@ -1,10 +1,9 @@
-"use server";
-
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { ActivityAction, NotificationType, Prisma } from "@prisma/client";
+import { AppError } from "@/lib/errors";
 
-interface LogActivityParams {
+export interface LogActivityParams {
   ticketId: string;
   performedById: string;
   action: ActivityAction;
@@ -14,8 +13,16 @@ interface LogActivityParams {
   metadata?: Record<string, unknown>;
 }
 
-// A helper function to hash the previous log entry with the new one
-function generateLogHash(previousHash: string | null, newData: any) {
+interface CreateNotificationParams {
+  userId: string;
+  ticketId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link?: string;
+}
+
+function generateLogHash(previousHash: string | null, newData: Record<string, unknown>) {
   const dataString = JSON.stringify({ prev: previousHash, data: newData });
   return crypto.createHash("sha256").update(dataString).digest("hex");
 }
@@ -23,9 +30,13 @@ function generateLogHash(previousHash: string | null, newData: any) {
 /**
  * Log an activity to a ticket's audit trail
  */
-export async function logActivity(params: LogActivityParams) {
-  // 1. Get the most recent log for this ticket
-  const lastLog = await prisma.activityLog.findFirst({
+export async function logActivity(
+  params: LogActivityParams,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  const lastLog = await db.activityLog.findFirst({
     where: { ticketId: params.ticketId },
     orderBy: { createdAt: "desc" },
   });
@@ -41,8 +52,7 @@ export async function logActivity(params: LogActivityParams) {
     metadata: params.metadata,
   });
 
-  // 2. Create the new tamper-proof log
-  return prisma.activityLog.create({
+  return db.activityLog.create({
     data: {
       ticketId: params.ticketId,
       performedById: params.performedById,
@@ -51,25 +61,17 @@ export async function logActivity(params: LogActivityParams) {
       previousValue: params.previousValue || null,
       newValue: params.newValue || null,
       metadata: params.metadata ? (params.metadata as Prisma.InputJsonValue) : undefined,
-      hash: newHash, // The new chained hash
+      hash: newHash,
     },
   });
 }
 
-interface CreateNotificationParams {
-  userId: string;
-  ticketId: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  link?: string;
-}
-
-/**
- * Create an in-app notification for a user
- */
-export async function createNotification(params: CreateNotificationParams) {
-  return prisma.notification.create({
+async function createNotification(
+  params: CreateNotificationParams,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+  return db.notification.create({
     data: {
       userId: params.userId,
       ticketId: params.ticketId,
@@ -88,10 +90,12 @@ export async function notifyOnTicketAction(
   ticketId: string,
   action: "created" | "assigned" | "status_changed" | "commented",
   actorId: string,
-  extra?: { assigneeId?: string; newStatus?: string; ticketTitle?: string }
+  extra?: { assigneeId?: string; newStatus?: string; ticketTitle?: string },
+  tx?: Prisma.TransactionClient
 ) {
-  const ticket = await prisma.ticket.findUnique({
-    where: { id: ticketId },
+  const db = tx ?? prisma;
+  const ticket = await db.ticket.findFirst({
+    where: { id: ticketId, deletedAt: null },
     include: {
       createdBy: true,
       assignedTo: true,
@@ -99,14 +103,15 @@ export async function notifyOnTicketAction(
     },
   });
 
-  if (!ticket) return;
+  if (!ticket) {
+    throw new AppError("NOT_FOUND", "Ticket not found", 404);
+  }
 
   const title = extra?.ticketTitle || ticket.title;
   const notifications: CreateNotificationParams[] = [];
 
   switch (action) {
     case "created":
-      // Notify property manager
       if (ticket.property.managerId && ticket.property.managerId !== actorId) {
         notifications.push({
           userId: ticket.property.managerId,
@@ -117,9 +122,7 @@ export async function notifyOnTicketAction(
         });
       }
       break;
-
     case "assigned":
-      // Notify the assigned technician
       if (extra?.assigneeId && extra.assigneeId !== actorId) {
         notifications.push({
           userId: extra.assigneeId,
@@ -130,9 +133,7 @@ export async function notifyOnTicketAction(
         });
       }
       break;
-
     case "status_changed":
-      // Notify tenant of status changes
       if (ticket.createdById !== actorId) {
         notifications.push({
           userId: ticket.createdById,
@@ -142,7 +143,6 @@ export async function notifyOnTicketAction(
           message: `Your request "${title}" is now ${extra?.newStatus?.replace("_", " ").toLowerCase()}`,
         });
       }
-      // Notify manager if staff completed
       if (
         extra?.newStatus === "COMPLETED" &&
         ticket.property.managerId &&
@@ -157,9 +157,7 @@ export async function notifyOnTicketAction(
         });
       }
       break;
-
-    case "commented":
-      // Notify all parties except the commenter
+    case "commented": {
       const usersToNotify = new Set<string>();
       if (ticket.createdById !== actorId) usersToNotify.add(ticket.createdById);
       if (ticket.assignedToId && ticket.assignedToId !== actorId) usersToNotify.add(ticket.assignedToId);
@@ -175,11 +173,11 @@ export async function notifyOnTicketAction(
         });
       });
       break;
+    }
   }
 
-  // Batch create all notifications
   if (notifications.length > 0) {
-    await prisma.notification.createMany({
+    await db.notification.createMany({
       data: notifications.map((n) => ({
         userId: n.userId,
         ticketId: n.ticketId,
@@ -190,4 +188,6 @@ export async function notifyOnTicketAction(
       })),
     });
   }
+
+  return notifications;
 }
