@@ -2,8 +2,8 @@
 > **Next-Gen, Mobile-First Property Management Platform** built for the Qwego Challenge.
 
 [![CI Status](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml/badge.svg)](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml)
-[![Demo App](https://img.shields.io/badge/Demo-Live_App-success?logo=vercel)](YOUR_VERCEL_LINK_HERE)
-[![Pitch Video](https://img.shields.io/badge/Loom-Video_Pitch-blue?logo=loom)](YOUR_LOOM_LINK_HERE)
+[![Demo App](https://img.shields.io/badge/Demo-Live_App-success?logo=vercel)](https://prop-maint.vercel.app)
+[![Pitch Video](https://img.shields.io/badge/Loom-Video_Pitch-blue?logo=loom)](https://loom.com)
 
 PropMaint isn't just a CRUD app. It's an **enterprise-grade, offline-capable, AI-powered** maintenance management ecosystem built to bridge the gap between Tenants, Managers, and Technicians. 
 

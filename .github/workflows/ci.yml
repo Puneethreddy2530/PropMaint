@@ -27,11 +27,9 @@ jobs:
       
     - name: Check TypeScript types
       run: npx tsc --noEmit
-      continue-on-error: true
       
     - name: Run ESLint
       run: npx eslint src --no-error-on-unmatched-pattern
-      continue-on-error: true
       
     # Uncomment when Vitest is configured
     # - name: Run Unit Tests
