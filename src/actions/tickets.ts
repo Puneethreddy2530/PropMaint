@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { toErrorResponse, AppError } from "@/lib/errors";
 import type { ActionResult } from "@/types/action";
 import * as TicketService from "@/services/ticketService";
+import type { Session } from "next-auth";
 import {
   TicketStatus,
   TicketPriority,
@@ -48,7 +49,7 @@ const addCommentSchema = z.object({
   isInternal: z.boolean().default(false),
 });
 
-function requireUser(session: Awaited<ReturnType<typeof auth>>) {
+function requireUser(session: Session | null) {
   if (!session?.user) {
     throw new AppError("UNAUTHORIZED", "Unauthorized", 401);
   }

@@ -51,14 +51,16 @@ export interface AddCommentInput {
   isInternal: boolean;
 }
 
+const ticketListInclude = {
+  property: true,
+  unit: true,
+  createdBy: { select: { id: true, name: true, avatarUrl: true } },
+  assignedTo: { select: { id: true, name: true, avatarUrl: true } },
+  _count: { select: { comments: true, attachments: true } },
+} satisfies Prisma.TicketInclude;
+
 export type TicketListItem = Prisma.TicketGetPayload<{
-  include: {
-    property: true;
-    unit: true;
-    createdBy?: { select: { id: true; name: true; avatarUrl: true } };
-    assignedTo?: { select: { id: true; name: true; avatarUrl: true } };
-    _count: { select: { comments: true; attachments: true } };
-  };
+  include: typeof ticketListInclude;
 }>;
 
 export type TicketDetail = Prisma.TicketGetPayload<{
@@ -366,35 +368,19 @@ export async function getTicketsForUser(user: SessionUser): Promise<TicketListIt
     case "TENANT":
       return prisma.ticket.findMany({
         where: { createdById: user.id, deletedAt: null },
-        include: {
-          property: true,
-          unit: true,
-          assignedTo: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { comments: true, attachments: true } },
-        },
+        include: ticketListInclude,
         orderBy: { createdAt: "desc" },
       });
     case "MANAGER":
       return prisma.ticket.findMany({
         where: { property: { managerId: user.id }, deletedAt: null },
-        include: {
-          property: true,
-          unit: true,
-          createdBy: { select: { id: true, name: true, avatarUrl: true } },
-          assignedTo: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { comments: true, attachments: true } },
-        },
+        include: ticketListInclude,
         orderBy: { createdAt: "desc" },
       });
     case "STAFF":
       return prisma.ticket.findMany({
         where: { assignedToId: user.id, deletedAt: null },
-        include: {
-          property: true,
-          unit: true,
-          createdBy: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { comments: true, attachments: true } },
-        },
+        include: ticketListInclude,
         orderBy: { createdAt: "desc" },
       });
     default:

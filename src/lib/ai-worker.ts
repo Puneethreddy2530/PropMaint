@@ -7,7 +7,7 @@ type PipelineInstance = (text: string, labels: string[] | string) => Promise<unk
 type ProgressCallback = (progress: unknown) => void;
 
 class PipelineSingleton {
-    static task = "zero-shot-classification";
+    static task: "zero-shot-classification" = "zero-shot-classification";
     // We use a tiny, quantized model specifically optimized for mobile/browsers
     static model = "Xenova/mobilebert-uncased-mnli";
     static instance: Promise<PipelineInstance> | null = null;
