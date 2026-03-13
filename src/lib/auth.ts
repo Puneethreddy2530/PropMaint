@@ -78,9 +78,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated to login
       } else if (isOnLogin) {
-        if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", nextUrl));
-        }
+        return true;
       }
 
       return true;

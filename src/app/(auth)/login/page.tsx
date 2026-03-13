@@ -5,7 +5,7 @@ import { loginAction, quickLoginAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/form-elements";
-import { Loader2, Shield, Wrench } from "lucide-react";
+import { Home, Loader2, Shield, Wrench } from "lucide-react";
 
 export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export default function LoginPage() {
                         <p className="text-xs text-muted-foreground text-center mb-3">Quick Demo Logins</p>
                         <div className="grid grid-cols-3 gap-2">
                             <Button onClick={() => handleQuickLogin("tenant")} disabled={!!loading} data-testid="login-tenant" variant="secondary" className="gap-1">
-                                {loading === "tenant" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                {loading === "tenant" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Home className="w-4 h-4" />}
                                 <span>Tenant</span>
                             </Button>
                             <Button onClick={() => handleQuickLogin("manager")} disabled={!!loading} data-testid="login-manager" variant="secondary" className="gap-1">
