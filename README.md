@@ -1,82 +1,77 @@
-# 🏢 PropMaint — Property Maintenance Management System
+﻿# PropMaint — Property Maintenance Management System
 
-> **Mobile-first, AI-powered property maintenance platform** built for the Qwego PropTech Challenge.
-
+[![Live Demo](https://img.shields.io/badge/Live_Demo-PropMaint-blue?style=for-the-badge&logo=vercel)](https://prop-maint.vercel.app)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#-docker-setup)
+[![Playwright Tests](https://img.shields.io/badge/E2E_Tests-Passing-32CD32?style=for-the-badge&logo=playwright)](#-testing)
 [![CI](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml/badge.svg)](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml)
-[![Live Demo](https://img.shields.io/badge/Demo-Live_App-success?logo=vercel)](https://prop-maint.vercel.app)
 
----
+A mobile-first, zero-cost AI property maintenance platform built for the Qwego PropTech Challenge. Designed around real operational workflows across tenants, managers, and technicians.
 
-## Demo Accounts
+## Quick Access
 
-Use the **Quick Demo Access** buttons on the login page, or sign in manually:
+The demo is fully seeded with realistic workflows and a lived-in activity history.
 
-| Role | Email | Password | Capabilities |
-|------|-------|----------|-------------|
-| 🏠 Tenant | sarah.johnson@demo.com | demo123 | Submit requests (voice + photo), track status, verify repairs |
-| 👔 Manager | michael.chen@demo.com | demo123 | View all tickets, assign technicians, analytics, SLA monitoring |
-| 🔧 Technician | james.rodriguez@demo.com | demo123 | View assignments, update progress, add resolution notes |
+| Role | Email | Password | What to Look For |
+| :--- | :--- | :--- | :--- |
+| Tenant | `sarah.johnson@demo.com` | `demo123` | Voice-to-text reporting, image uploads, real-time status tracking |
+| Manager | `michael.chen@demo.com` | `demo123` | SLA monitoring, triage banner, bulk assignment |
+| Technician | `james.rodriguez@demo.com` | `demo123` | Offline-first mode, task progress updates, resolution logs |
 
----
+You can also use the 1-click Quick Login buttons on the login page.
 
-## What Makes This Different
+## Demo Story Highlights
 
-This isn't a generic CRUD ticketing app. Every feature was designed around how property maintenance **actually works**.
+The seed data tells a story so the demo feels alive on first load:
 
-### Core Platform
-- **Role-Based Access Control** — 14 granular permissions across 3 roles, enforced on every server action
-- **Smart Ticket Wizard** — Multi-step form with category selection, emergency keyword detection (gas/fire/flood triggers safety instructions + auto-escalation), permission-to-enter, preferred times
-- **Status State Machine** — Open → Assigned → In Progress → On Hold → Completed → Verified → Closed with role-enforced transitions
-- **SLA Engine** — Auto-calculated deadlines per priority (Emergency: 2h, Urgent: 24h, Routine: 72h) with breach detection and visual warnings
-- **Activity Timeline** — Cryptographic audit trail: every mutation is logged with a chained SHA-256 hash preventing database tampering
-- **File Uploads** — Drag & drop image attachments with type/size validation and gallery view
-- **In-App Notifications** — Smart routing: tenants get status updates, staff get assignments, managers get escalations
-- **Comments** — External (tenant-visible) + internal staff-only notes
+- Emergency ticket actively breaching SLA (gas smell in Unit A-201)
+- Routine ticket with a tenant/staff back-and-forth comment thread (AC issue in TH-1)
+- Manager dashboard shows triage warnings and assigns multiple tickets at once
 
-### Beyond the Brief
-- **Client-Side AI Triage** — Zero-shot classification via `transformers.js` running in a Web Worker. Auto-categorizes issues from text description. Zero API cost. Fully private.
-- **Voice-to-Text** — Speech Recognition API for hands-free ticket submission on mobile
-- **Offline-First Mode** — Network detection + SyncManager queue for technicians working in basements/elevators
-- **Dark/Light Theme** — System-aware with manual toggle via `next-themes`
-- **Page Transitions** — Framer Motion animations between routes
-- **PWA Ready** — Web app manifest for home screen installation
-- **Analytics Dashboard** — SLA compliance rate, avg resolution time, tickets by status/priority/category
+## How It Hits the Evaluation Criteria
 
----
+### 1. Workflow Logic and Edge Cases
+- Offline-first technician flow with a SyncManager queue for basement deadzones
+- Strict SLA state machine with role-based enforcement on every transition
+- Emergency detection for gas/fire/flood keywords with automatic escalation
 
-## Architecture
+### 2. No Paid APIs and Thoughtful UX
+- Client-side AI triage via `transformers.js` in a Web Worker, zero API cost
+- Fallback keyword matching if the model cannot load on a client
+- Voice input using the native Web Speech API for mobile-first reporting
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    Client (PWA)                            │
-│  Mobile: Bottom Tab Nav  │  Desktop: Sidebar              │
-│  AI Triage (Web Worker)  │  Voice Input  │  Offline Queue │
-└────────────────────┬─────────────────────────────────────┘
-                     │ Server Actions + API Routes
-┌────────────────────▼─────────────────────────────────────┐
-│               Next.js 15 (App Router)                     │
-│  NextAuth v5 (JWT + RBAC)  │  Zod Validation              │
-│  SHA-256 Audit Chain       │  SLA Engine   │  Sonner Toast │
-└────────────────────┬─────────────────────────────────────┘
-                     │ Prisma ORM
-┌────────────────────▼─────────────────────────────────────┐
-│            PostgreSQL (Neon — serverless)                  │
-│  13 Models  │  6 Enums  │  Optimized Indexes              │
-└──────────────────────────────────────────────────────────┘
-```
+### 3. Backend Architecture and Data Integrity
+- Next.js App Router + Server Actions with Zod validation
+- Prisma schema designed around properties, buildings, units, and audit trails
+- Immutable `ActivityLog` chain for every assignment, status change, and comment
+
+### 4. Auth and Role Management
+- Auth.js (NextAuth v5) with JWT sessions
+- Granular RBAC: tenants cannot assign, technicians cannot delete, managers control triage
+
+### 5. Tests and Quality
+- Playwright E2E: tenant submits a ticket, manager assigns it
+- Vitest unit tests for RBAC and core workflow utilities
+
+## Core Features
+
+- Role-based dashboards for tenants, managers, and technicians
+- Multi-step ticket wizard with voice input, attachments, and auto-categorization
+- SLA deadlines by priority with breach warnings and triage banners
+- Bulk assignment for managers and visual “on fire” ticket indicators
+- Activity timeline, notifications, and internal vs external comments
+- Offline queue for technicians that syncs when connectivity returns
 
 ## Tech Stack
 
 | Layer | Technology | Why |
-|-------|-----------|-----|
-| Framework | **Next.js 15** (App Router + Server Actions) | Single codebase, TypeScript end-to-end, no CORS |
-| Database | **PostgreSQL** via **Neon** | Free serverless Postgres, Vercel-native |
-| ORM | **Prisma** | Schema-first, type-safe queries, auto-migrations |
-| Auth | **NextAuth.js v5** | JWT, middleware route protection, RBAC callbacks |
-| UI | **shadcn/ui + Tailwind CSS** | Radix accessibility, full ownership, dark mode |
-| AI | **transformers.js** | In-browser ML, zero API cost, privacy-first |
-| Validation | **Zod** | Runtime type checking on all mutations |
-| Deployment | **Vercel** + **Docker** | Zero-config hosting + containerized alternative |
+| --- | --- | --- |
+| Framework | Next.js 16.1 (App Router + Server Actions) | Single codebase, TypeScript end-to-end |
+| Database | PostgreSQL (Neon in demo) | Serverless Postgres with free tier |
+| ORM | Prisma | Type-safe schema and queries |
+| Auth | NextAuth v5 (Auth.js) | JWT-based sessions and middleware protection |
+| UI | shadcn/ui + Tailwind CSS | Accessible components and rapid iteration |
+| AI | transformers.js | In-browser ML, zero API cost |
+| Tests | Vitest + Playwright | Unit + E2E coverage |
 
 ## Database Schema
 
@@ -100,11 +95,15 @@ erDiagram
     Ticket ||--o{ Notification : triggers
 ```
 
----
+## Docker Setup
 
-## Getting Started
+```bash
+docker compose up --build
+# DB is auto-seeded on startup (3 tenants, 2 managers, 5 technicians, 10 tickets)
+# Open http://localhost:3000
+```
 
-### Option A: Local Development
+## Local Development
 
 ```bash
 # 1. Clone
@@ -116,8 +115,7 @@ npm install
 
 # 3. Configure
 cp .env.example .env
-# Edit .env with your Neon connection string
-# Generate AUTH_SECRET: openssl rand -base64 32
+# Set DATABASE_URL and AUTH_SECRET
 
 # 4. Database
 npx prisma generate
@@ -129,15 +127,7 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-### Option B: Docker
-
-```bash
-docker compose up --build
-# DB is auto-seeded on startup (3 tenants, 2 managers, 5 technicians, 10 tickets)
-# Open http://localhost:3000
-```
-
-### Testing
+## Testing
 
 ```bash
 # Unit tests (RBAC)
@@ -148,34 +138,21 @@ npm run test:unit
 npm run test:e2e
 ```
 
----
-
 ## Project Structure
 
 ```
 src/
-├── actions/           # Server Actions (auth, tickets, activity logging)
-├── app/
-│   ├── (auth)/login/  # Login with quick-demo role buttons
-│   ├── (dashboard)/   # All protected pages (10 routes)
-│   └── api/           # Auth handler + file upload endpoint
-├── components/
-│   ├── layout/        # AppShell, theme toggle, offline banner, transitions
-│   ├── tickets/       # Wizard, timeline, comments, upload, actions
-│   ├── dashboard/     # Stat cards, recent tickets
-│   └── ui/            # shadcn/ui primitives
-└── lib/               # Auth, permissions, AI worker, speech, sync, utils
+  actions/           # Server Actions (auth, tickets, activity logging)
+  app/
+    (auth)/login/    # Login with quick-demo role buttons
+    (dashboard)/     # All protected pages
+    api/             # Auth handler + file upload endpoint
+  components/
+    layout/          # App shell, theme toggle, offline banner, transitions
+    tickets/         # Wizard, timeline, comments, upload, actions
+    dashboard/       # Stat cards, recent tickets
+    ui/              # shadcn/ui primitives
+  lib/               # Auth, permissions, AI worker, speech, sync, utils
 ```
 
-## Design Decisions
-
-1. **Server Actions over API Routes** — Type-safe, no client fetch boilerplate, progressive enhancement
-2. **JWT over Session DB** — No Redis needed, works in Vercel serverless, role in token for zero-latency auth
-3. **Chained SHA-256 Audit** — Each activity log hashes the previous entry's hash, creating a tamper-evident chain
-4. **Client-Side ML** — `transformers.js` in a Web Worker avoids blocking the UI thread and costs $0
-5. **SLA as First-Class** — Deadlines auto-calculated from priority, checked on every status mutation
-6. **Offline Queue** — localStorage-based mutation queue with automatic sync on reconnect
-
----
-
-*Built for the Qwego PropTech Full-Stack Challenge · No paid APIs · All demo data*
+Built for the Qwego PropTech Challenge. No paid APIs. Fully demo-ready.
