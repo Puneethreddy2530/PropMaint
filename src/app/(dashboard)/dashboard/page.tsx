@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { getDashboardStats } from "@/actions/tickets";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { RecentTickets } from "@/components/dashboard/recent-tickets";
-import { TestEmailCard } from "@/components/dashboard/test-email-card";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { AlertTriangle } from "lucide-react";
 
@@ -31,10 +30,6 @@ export default async function DashboardPage() {
                 )}
 
                 <DashboardStats stats={stats} />
-
-                {session?.user?.role === "MANAGER" && (
-                    <TestEmailCard />
-                )}
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <RecentTickets tickets={stats.recentTickets} />
