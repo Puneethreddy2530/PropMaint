@@ -66,14 +66,17 @@ export default function LoginPage() {
                     <div className="pt-4 border-t">
                         <p className="text-xs text-muted-foreground text-center mb-3">Quick Demo Logins</p>
                         <div className="grid grid-cols-3 gap-2">
-                            <Button onClick={() => handleQuickLogin("tenant")} disabled={!!loading} data-testid="login-tenant" variant="secondary">
-                                {loading === "tenant" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Tenant"}
+                            <Button onClick={() => handleQuickLogin("tenant")} disabled={!!loading} data-testid="login-tenant" variant="secondary" className="gap-1">
+                                {loading === "tenant" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                <span>Tenant</span>
                             </Button>
-                            <Button onClick={() => handleQuickLogin("manager")} disabled={!!loading} data-testid="login-manager" variant="secondary">
+                            <Button onClick={() => handleQuickLogin("manager")} disabled={!!loading} data-testid="login-manager" variant="secondary" className="gap-1">
                                 {loading === "manager" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+                                <span>Manager</span>
                             </Button>
-                            <Button onClick={() => handleQuickLogin("staff")} disabled={!!loading} data-testid="login-staff" variant="secondary">
+                            <Button onClick={() => handleQuickLogin("staff")} disabled={!!loading} data-testid="login-staff" variant="secondary" className="gap-1">
                                 {loading === "staff" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+                                <span>Tech</span>
                             </Button>
                         </div>
                     </div>
