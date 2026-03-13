@@ -115,7 +115,7 @@ npm install
 
 # 3. Configure
 cp .env.example .env
-# Set DATABASE_URL and AUTH_SECRET
+# Set DATABASE_URL, AUTH_SECRET, and RESEND_FROM_EMAIL if testing email
 
 # 4. Database
 npx prisma generate
@@ -137,6 +137,10 @@ npm run test:unit
 # First time: npx playwright install
 npm run test:e2e
 ```
+
+## Email (Resend)
+
+Set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` in Vercel or your local `.env`, then use the Manager dashboard card to send a test email to yourself.
 
 ## Project Structure
 
