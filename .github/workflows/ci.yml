@@ -34,6 +34,5 @@ jobs:
     - name: Run ESLint
       run: npx eslint src --no-error-on-unmatched-pattern
       
-    # Uncomment when Vitest is configured
-    # - name: Run Unit Tests
-    #   run: npm run test
+    - name: Run Unit Tests
+      run: npm run test:unit
