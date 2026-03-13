@@ -249,7 +249,7 @@ async function main() {
   const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
   const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
 
-  // Ticket 1: EMERGENCY — Active gas smell (just submitted)
+  // Ticket 1: EMERGENCY - Active gas smell (SLA breached)
   const ticket1 = await prisma.ticket.create({
     data: {
       title: "Strong gas smell in kitchen",
@@ -262,8 +262,9 @@ async function main() {
       createdById: tenant1.id,
       permissionToEnter: true,
       preferredTimes: "Available immediately - this is urgent",
-      slaDeadline: new Date(now.getTime() + 2 * 60 * 60 * 1000),
-      createdAt: hoursAgo(1),
+      slaDeadline: hoursAgo(1),
+      slaBroken: true,
+      createdAt: hoursAgo(5),
     },
   });
 
@@ -535,16 +536,23 @@ async function main() {
     });
   }
 
-  // Activities for ticket 1 (emergency gas smell)
-  await prisma.activityLog.create({
-    data: {
-      ticketId: ticket1.id,
-      performedById: tenant1.id,
-      action: ActivityAction.TICKET_CREATED,
-      description: "Sarah Johnson submitted an emergency safety request",
-      createdAt: hoursAgo(1),
-    },
-  });
+  // Activities for ticket 1 (emergency gas smell - SLA breached)
+  const t1Activities = [
+    { action: ActivityAction.TICKET_CREATED, desc: "Sarah Johnson submitted an emergency safety request", at: hoursAgo(5), by: tenant1.id },
+    { action: ActivityAction.SLA_BREACHED, desc: "SLA deadline exceeded - emergency ticket still open", at: hoursAgo(1), by: manager.id },
+  ];
+
+  for (const act of t1Activities) {
+    await prisma.activityLog.create({
+      data: {
+        ticketId: ticket1.id,
+        performedById: act.by,
+        action: act.action,
+        description: act.desc,
+        createdAt: act.at,
+      },
+    });
+  }
 
   // Activities for ticket 10 (window latch)
   await prisma.activityLog.create({
@@ -646,6 +654,37 @@ async function main() {
     },
   });
 
+  // Comments on ticket 3 (AC not cooling - routine back-and-forth)
+  await prisma.comment.create({
+    data: {
+      ticketId: ticket3.id,
+      authorId: staff1.id,
+      content: "I checked the unit and the filter looks clean. I suspect low refrigerant or a loose blower connection. I can return tomorrow morning to check levels.",
+      isInternal: false,
+      createdAt: daysAgo(2),
+    },
+  });
+
+  await prisma.comment.create({
+    data: {
+      ticketId: ticket3.id,
+      authorId: tenant3.id,
+      content: "Tomorrow morning works. Please call or text before you arrive so I can put the dog away.",
+      isInternal: false,
+      createdAt: daysAgo(1),
+    },
+  });
+
+  await prisma.comment.create({
+    data: {
+      ticketId: ticket3.id,
+      authorId: staff1.id,
+      content: "Will do. I will arrive between 9-10am and give you a heads up.",
+      isInternal: false,
+      createdAt: hoursAgo(20),
+    },
+  });
+
   // Comments on ticket 4 (garbage disposal)
   await prisma.comment.create({
     data: {
@@ -697,6 +736,7 @@ async function main() {
   const notifications = [
     // Manager notifications
     { userId: manager.id, ticketId: ticket1.id, type: NotificationType.TICKET_CREATED, title: "🚨 Emergency Request", message: "Sarah Johnson reported a gas smell in Unit A-201 at Sunset Ridge Apartments", read: false, at: hoursAgo(1) },
+    { userId: manager.id, ticketId: ticket1.id, type: NotificationType.SLA_WARNING, title: "SLA Breach - Emergency", message: "Gas smell emergency in Unit A-201 has breached its SLA", read: false, at: hoursAgo(1) },
     { userId: manager.id, ticketId: ticket7.id, type: NotificationType.TICKET_CREATED, title: "New Urgent Request", message: "Sarah Johnson reported an ant infestation in Unit A-102", read: false, at: hoursAgo(6) },
     { userId: manager2.id, ticketId: ticket4.id, type: NotificationType.STATUS_UPDATE, title: "Work Completed", message: "Garbage disposal repair in TH-2 completed — needs verification", read: true, at: daysAgo(1) },
     { userId: manager.id, ticketId: ticket9.id, type: NotificationType.SLA_WARNING, title: "⚠️ SLA Breached", message: "Ceiling water stain ticket exceeded 24-hour SLA", read: false, at: daysAgo(1) },
@@ -750,8 +790,8 @@ async function main() {
   console.log(`   Properties: 3 | Buildings: 4 | Units: 11`);
   console.log(`   Users: 10 (2 managers, 5 staff, 3 tenants)`);
   console.log(`   Tickets: 10 (across all statuses)`);
-  console.log(`   Activity Logs: ${t2Activities.length + t4Activities.length + t5Activities.length + t6Activities.length + t9Activities.length + 2}`);
-  console.log(`   Comments: 7 (including internal notes)`);
+  console.log(`   Activity Logs: ${t1Activities.length + t2Activities.length + t4Activities.length + t5Activities.length + t6Activities.length + t9Activities.length + 1}`);
+  console.log(`   Comments: 10 (including internal notes)`);
   console.log(`   Notifications: ${notifications.length}`);
 }
 
