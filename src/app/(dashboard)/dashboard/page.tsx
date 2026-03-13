@@ -23,10 +23,6 @@ export default async function DashboardPage() {
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <RecentTickets tickets={stats.recentTickets} />
-                    {/* Placeholder for future widgets like Notifications or a Calendar */}
-                    <div className="col-span-1 lg:col-span-5 hidden">
-                        {/* Extended content area */}
-                    </div>
                 </div>
             </div>
         </PageTransition>
