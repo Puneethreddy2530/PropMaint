@@ -40,6 +40,11 @@ export interface AssignTechnicianInput {
   staffId: string;
 }
 
+export interface BulkAssignTechnicianInput {
+  ticketIds: string[];
+  staffId: string;
+}
+
 export interface UpdatePriorityInput {
   ticketId: string;
   priority: TicketPriority;
@@ -287,6 +292,67 @@ export async function assignTechnician(input: AssignTechnicianInput, actor: Sess
   });
 
   return;
+}
+
+export async function bulkAssignTechnician(input: BulkAssignTechnicianInput, actor: SessionUser) {
+  if (!hasPermission(actor.role, "ticket:assign")) {
+    throw new AppError("FORBIDDEN", "Only managers can assign tickets", 403);
+  }
+
+  const staff = await prisma.user.findFirst({
+    where: { id: input.staffId, role: "STAFF", isActive: true, deletedAt: null },
+  });
+  if (!staff) throw new AppError("NOT_FOUND", "Staff member not found", 404);
+
+  const tickets = await prisma.ticket.findMany({
+    where: { id: { in: input.ticketIds }, deletedAt: null },
+  });
+
+  if (tickets.length === 0) {
+    throw new AppError("NOT_FOUND", "No tickets found to assign", 404);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const ticket of tickets) {
+      const previousAssignee = ticket.assignedToId;
+
+      await tx.ticket.update({
+        where: { id: ticket.id },
+        data: {
+          assignedToId: input.staffId,
+          status:
+            ticket.status === TicketStatus.OPEN
+              ? TicketStatus.ASSIGNED
+              : ticket.status,
+          acknowledgedAt: ticket.acknowledgedAt || new Date(),
+          version: { increment: 1 },
+        },
+      });
+
+      await logActivity(
+        {
+          ticketId: ticket.id,
+          performedById: actor.id,
+          action: previousAssignee ? ActivityAction.REASSIGNED : ActivityAction.ASSIGNED,
+          description: `${actor.name} assigned this ticket to ${staff.name}`,
+          previousValue: previousAssignee || undefined,
+          newValue: input.staffId,
+          metadata: { assigneeName: staff.name },
+        },
+        tx
+      );
+
+      await notifyOnTicketAction(
+        ticket.id,
+        "assigned",
+        actor.id,
+        { assigneeId: input.staffId },
+        tx
+      );
+    }
+  });
+
+  return { updated: tickets.length };
 }
 
 export async function updatePriority(input: UpdatePriorityInput, actor: SessionUser) {

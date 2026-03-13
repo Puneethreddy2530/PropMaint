@@ -43,6 +43,11 @@ const assignTicketSchema = z.object({
   staffId: z.string(),
 });
 
+const bulkAssignSchema = z.object({
+  staffId: z.string().min(1),
+  ticketIds: z.array(z.string()).min(1),
+});
+
 const addCommentSchema = z.object({
   ticketId: z.string(),
   content: z.string().min(1, "Comment cannot be empty").max(2000),
@@ -137,6 +142,27 @@ export async function assignTicket(formData: FormData): Promise<ActionResult> {
     await TicketService.assignTechnician(parsed, user);
 
     revalidatePath(`/tickets/${parsed.ticketId}`);
+    revalidatePath("/tickets");
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+// ========================================================================
+// BULK ASSIGN (Manager)
+// ========================================================================
+
+export async function bulkAssignTickets(payload: { staffId: string; ticketIds: string[] }): Promise<ActionResult> {
+  const session = await auth();
+
+  try {
+    const user = requireUser(session);
+    const parsed = bulkAssignSchema.parse(payload);
+    await TicketService.bulkAssignTechnician(parsed, user);
+
     revalidatePath("/tickets");
     revalidatePath("/dashboard");
 

@@ -1,4 +1,4 @@
-import { getTicketsForUser } from "@/actions/tickets";
+import { getStaffMembers, getTicketsForUser } from "@/actions/tickets";
 import { auth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,12 +9,14 @@ import Link from "next/link";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { TicketsListWrapper } from "@/components/tickets/tickets-list-wrapper";
 import { AssignedTicketsCache } from "@/components/tickets/assigned-tickets-cache";
+import { ManagerTicketsList } from "@/components/tickets/manager-tickets-list";
 
 export default async function TicketsPage() {
     const session = await auth();
     const tickets = await getTicketsForUser();
 
     const role = session?.user?.role;
+    const staffMembers = role === "MANAGER" ? await getStaffMembers() : [];
     const title = role === "TENANT" ? "My Requests" : role === "MANAGER" ? "All Tickets" : "My Assignments";
 
     return (
@@ -42,6 +44,8 @@ export default async function TicketsPage() {
                                 <p className="text-muted-foreground">No tickets yet</p>
                             </CardContent>
                         </Card>
+                    ) : role === "MANAGER" ? (
+                        <ManagerTicketsList tickets={tickets} staffMembers={staffMembers} />
                     ) : (
                         <div className="space-y-2">
                             {tickets.map((ticket) => {
