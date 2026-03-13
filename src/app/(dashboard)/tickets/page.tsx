@@ -18,6 +18,7 @@ export default async function TicketsPage() {
     const role = session?.user?.role;
     const staffMembers = role === "MANAGER" ? await getStaffMembers() : [];
     const title = role === "TENANT" ? "My Requests" : role === "MANAGER" ? "All Tickets" : "My Assignments";
+    const nowMs = Date.now();
 
     return (
         <PageTransition>
@@ -45,7 +46,7 @@ export default async function TicketsPage() {
                             </CardContent>
                         </Card>
                     ) : role === "MANAGER" ? (
-                        <ManagerTicketsList tickets={tickets} staffMembers={staffMembers} />
+                        <ManagerTicketsList tickets={tickets} staffMembers={staffMembers} nowMs={nowMs} />
                     ) : (
                         <div className="space-y-2">
                             {tickets.map((ticket) => {

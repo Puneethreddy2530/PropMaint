@@ -17,9 +17,10 @@ import type { StaffMember, TicketListItem } from "@/services/ticketService";
 type Props = {
   tickets: TicketListItem[];
   staffMembers: StaffMember[];
+  nowMs: number;
 };
 
-export function ManagerTicketsList({ tickets, staffMembers }: Props) {
+export function ManagerTicketsList({ tickets, staffMembers, nowMs }: Props) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<string>("");
@@ -28,7 +29,7 @@ export function ManagerTicketsList({ tickets, staffMembers }: Props) {
   const allSelected = selectedIds.length > 0 && selectedIds.length === tickets.length;
 
   const { breached, dueSoon } = useMemo(() => {
-    const now = Date.now();
+    const now = nowMs;
     const breachedTickets = tickets.filter((t) => t.slaBroken);
     const dueSoonTickets = tickets.filter((t) => {
       if (!t.slaDeadline || t.slaBroken) return false;
@@ -37,7 +38,7 @@ export function ManagerTicketsList({ tickets, staffMembers }: Props) {
       return hoursLeft > 0 && hoursLeft <= 6;
     });
     return { breached: breachedTickets, dueSoon: dueSoonTickets };
-  }, [tickets]);
+  }, [tickets, nowMs]);
 
   function toggleAll() {
     setSelectedIds(allSelected ? [] : tickets.map((t) => t.id));
@@ -142,7 +143,7 @@ export function ManagerTicketsList({ tickets, staffMembers }: Props) {
           const slaDeadline = ticket.slaDeadline ? new Date(ticket.slaDeadline) : null;
           const hoursLeft =
             slaDeadline && !isSLABroken
-              ? Math.round((slaDeadline.getTime() - Date.now()) / (1000 * 60 * 60))
+              ? Math.round((slaDeadline.getTime() - nowMs) / (1000 * 60 * 60))
               : null;
           const dueSoonFlag = hoursLeft !== null && hoursLeft <= 6 && hoursLeft >= 0;
 
