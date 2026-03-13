@@ -18,7 +18,7 @@ export default async function TicketsPage() {
     const role = session?.user?.role;
     const staffMembers = role === "MANAGER" ? await getStaffMembers() : [];
     const title = role === "TENANT" ? "My Requests" : role === "MANAGER" ? "All Tickets" : "My Assignments";
-    const nowMs = Date.now();
+    const nowMs = new Date().getTime();
 
     return (
         <PageTransition>
