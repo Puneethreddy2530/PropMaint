@@ -42,7 +42,7 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
         }
     }, [transcript, clearTranscript]);
 
-    const { analyzeIssue, result, isProcessing } = useAITriage();
+    const { analyzeIssue, result, isProcessing, error: aiError } = useAITriage();
 
     useEffect(() => {
         if (result && result.labels && result.labels.length > 0) {
@@ -212,6 +212,11 @@ export function NewTicketForm({ properties }: { properties: Property[] }) {
                                     <div className="mt-2 p-3 bg-green-50 text-green-800 text-sm rounded-md border border-green-200">
                                         <strong>AI Suggestion:</strong> Looks like a <b>{result.labels[0]}</b> issue.
                                         Confidence: {Math.round((result.scores[0] || 0) * 100)}%
+                                    </div>
+                                ) : null}
+                                {aiError ? (
+                                    <div className="mt-2 text-xs text-amber-700">
+                                        {aiError}
                                     </div>
                                 ) : null}
                             </div>
