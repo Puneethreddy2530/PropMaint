@@ -8,7 +8,7 @@ describe("RBAC permissions", () => {
   it("grants only the roles listed per permission", () => {
     for (const permission of Object.keys(PERMISSIONS) as Array<keyof typeof PERMISSIONS>) {
       for (const role of roles) {
-        const expected = PERMISSIONS[permission].includes(role);
+        const expected = (PERMISSIONS[permission] as readonly UserRole[]).includes(role);
         expect(hasPermission(role, permission)).toBe(expected);
       }
     }
