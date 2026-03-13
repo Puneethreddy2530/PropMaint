@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { PERMISSIONS, hasPermission, getNextStatuses } from "@/lib/permissions";
 import { UserRole, TicketStatus } from "@prisma/client";
 
-const roles = [UserRole.TENANT, UserRole.MANAGER, UserRole.STAFF];
+const roles: UserRole[] = [UserRole.TENANT, UserRole.MANAGER, UserRole.STAFF];
 
 describe("RBAC permissions", () => {
   it("grants only the roles listed per permission", () => {
