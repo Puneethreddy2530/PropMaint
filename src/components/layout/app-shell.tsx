@@ -132,6 +132,11 @@ export function AppShell({ children, user, unreadCount }: AppShellProps) {
                             <div className={cn("text-[10px] font-semibold px-2 py-1 rounded-full", roleColor)}>
                                 {roleLabel}
                             </div>
+                            <form action={logoutAction}>
+                                <Button type="submit" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Sign Out">
+                                    <LogOut className="w-4 h-4" />
+                                </Button>
+                            </form>
                         </div>
                     </div>
                 </header>
