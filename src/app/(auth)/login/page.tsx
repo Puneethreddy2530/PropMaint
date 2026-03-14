@@ -34,15 +34,15 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-slate-950 dark:via-zinc-900 dark:to-slate-900">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 via-white to-slate-50 text-slate-900">
             <div className="w-full max-w-md space-y-6">
                 {/* Brand */}
                 <div className="text-center space-y-2">
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
                         <Building2 className="w-7 h-7" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">PropMaint</h1>
-                    <p className="text-muted-foreground text-sm">Property Maintenance Management System</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-900">PropMaint</h1>
+                    <p className="text-slate-600 dark:text-slate-600 text-sm">Property Maintenance Management System</p>
                 </div>
 
                 {/* Quick Login - THE KEY FEATURE FOR JUDGES */}
@@ -107,7 +107,7 @@ export default function LoginPage() {
                     </CardContent>
                 </Card>
 
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-slate-500 dark:text-slate-500">
                     Built for the Qwego PropTech Challenge - All data is demo/mock
                 </p>
             </div>
