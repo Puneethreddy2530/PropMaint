@@ -6,8 +6,8 @@ import { logActivity } from "./activityService";
 import { ActivityAction } from "@prisma/client";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png"] as const;
-const ALLOWED_EXTS = [".jpg", ".jpeg", ".png"] as const;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 
 function hasValidImageSignature(buffer: Buffer, mimeType: string) {
   if (mimeType === "image/jpeg") {
@@ -16,6 +16,12 @@ function hasValidImageSignature(buffer: Buffer, mimeType: string) {
   if (mimeType === "image/png") {
     const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     return buffer.subarray(0, 8).equals(pngSig);
+  }
+  if (mimeType === "image/webp") {
+    // WebP signature format is 'RIFF' starting at byte 0, and 'WEBP' starting at byte 8.
+    const riff = Buffer.from("RIFF");
+    const webp = Buffer.from("WEBP");
+    return buffer.subarray(0, 4).equals(riff) && buffer.subarray(8, 12).equals(webp);
   }
   return false;
 }
@@ -37,12 +43,12 @@ export async function uploadAttachment(input: UploadAttachmentInput): Promise<Up
   const { ticketId, file, actor } = input;
 
   if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
-    throw new AppError("BAD_REQUEST", "Invalid file type. Allowed: JPEG, PNG", 400);
+    throw new AppError("BAD_REQUEST", "Invalid file type. Allowed: JPEG, PNG, WebP", 400);
   }
 
   const lowerName = file.name.toLowerCase();
   if (!ALLOWED_EXTS.some((ext) => lowerName.endsWith(ext))) {
-    throw new AppError("BAD_REQUEST", "Invalid file extension. Allowed: .jpg, .jpeg, .png", 400);
+    throw new AppError("BAD_REQUEST", "Invalid file extension. Allowed: .jpg, .jpeg, .png, .webp", 400);
   }
 
   if (file.size > MAX_FILE_SIZE) {
@@ -60,7 +66,7 @@ export async function uploadAttachment(input: UploadAttachmentInput): Promise<Up
   const buffer = Buffer.from(bytes);
 
   if (!hasValidImageSignature(buffer, file.type)) {
-    throw new AppError("BAD_REQUEST", "Invalid image content. Only JPEG/PNG are allowed", 400);
+    throw new AppError("BAD_REQUEST", "Invalid image content. Only JPEG/PNG/WebP are allowed", 400);
   }
 
   const storage = getStorageProvider();

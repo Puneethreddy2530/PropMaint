@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { loginAction, quickLoginAction } from "@/actions/auth";
@@ -34,7 +34,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 via-white to-slate-50">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-slate-950 dark:via-zinc-900 dark:to-slate-900">
             <div className="w-full max-w-md space-y-6">
                 {/* Brand */}
                 <div className="text-center space-y-2">

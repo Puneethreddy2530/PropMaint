@@ -22,13 +22,13 @@ export function FileUpload({ ticketId, existingAttachments = [], onUploadComplet
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const valid = fileArray.filter(f => {
-      if (!["image/jpeg", "image/png"].includes(f.type)) {
-        toast.error(`${f.name}: Only JPEG or PNG allowed`);
+      if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+        toast.error(`${f.name}: Only JPEG, PNG or WebP allowed`);
         return false;
       }
       const ext = f.name.toLowerCase().split(".").pop();
-      if (!ext || !["jpg", "jpeg", "png"].includes(ext)) {
-        toast.error(`${f.name}: Invalid extension (.jpg, .jpeg, .png only)`);
+      if (!ext || !["jpg", "jpeg", "png", "webp"].includes(ext)) {
+        toast.error(`${f.name}: Invalid extension (.jpg, .jpeg, .png, .webp only)`);
         return false;
       }
       if (f.size > 5 * 1024 * 1024) {
@@ -130,7 +130,7 @@ export function FileUpload({ ticketId, existingAttachments = [], onUploadComplet
           dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 hover:bg-muted/50"
         }`}
       >
-        <input ref={inputRef} type="file" accept="image/jpeg,image/png" multiple hidden
+        <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
           onChange={e => e.target.files && handleFiles(e.target.files)} />
         <div className="flex flex-col items-center gap-2">
           {uploading ? (
@@ -140,7 +140,7 @@ export function FileUpload({ ticketId, existingAttachments = [], onUploadComplet
           )}
           <div>
             <p className="text-sm font-medium">{uploading ? "Uploading..." : "Drop images here or click to browse"}</p>
-            <p className="text-xs text-muted-foreground mt-1">JPEG or PNG up to 5MB</p>
+            <p className="text-xs text-muted-foreground mt-1">JPEG, PNG or WebP up to 5MB</p>
           </div>
         </div>
       </div>
