@@ -1,79 +1,241 @@
-﻿# PropMaint — Property Maintenance Management System
+# PropMaint — Intelligent Property Maintenance Platform
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-PropMaint-blue?style=for-the-badge&logo=vercel)](https://prop-maint.vercel.app)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#-docker-setup)
-[![Playwright Tests](https://img.shields.io/badge/E2E_Tests-Passing-32CD32?style=for-the-badge&logo=playwright)](#-testing)
+[![Docker](https://img.shields.io/badge/Docker-Production_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#docker--production)
+[![Playwright](https://img.shields.io/badge/E2E_Tests-Passing-32CD32?style=for-the-badge&logo=playwright)](#testing)
 [![CI](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml/badge.svg)](https://github.com/Puneethreddy2530/PropMaint/actions/workflows/ci.yml)
 
-A mobile-first, zero-cost AI property maintenance platform built for the Qwego PropTech Challenge. Designed around real operational workflows across tenants, managers, and technicians.
+A **mobile-first property maintenance platform** designed for real operational workflows across **tenants, property managers, and technicians**.
 
-## Quick Access
+PropMaint combines **offline-first architecture**, **zero-cost edge AI**, and **strict SLA workflow enforcement** to solve the fragmented communication problems common in property management systems.
 
-The demo is fully seeded with realistic workflows and a lived-in activity history.
+Built for the **Qwego PropTech Challenge**.
 
-| Role | Email | Password | What to Look For |
-| :--- | :--- | :--- | :--- |
-| Tenant | `sarah.johnson@demo.com` | `demo123` | Voice-to-text reporting, image uploads, real-time status tracking |
-| Manager | `michael.chen@demo.com` | `demo123` | SLA monitoring, triage banner, bulk assignment |
-| Technician | `james.rodriguez@demo.com` | `demo123` | Offline-first mode, task progress updates, resolution logs |
+---
 
-You can also use the 1-click Quick Login buttons on the login page.
+# 🏢 The Problem
 
-## Demo Story Highlights
+Property managers handle dozens of maintenance issues daily across multiple buildings and teams.
 
-The seed data tells a story so the demo feels alive on first load:
+Most current workflows rely on:
 
-- Emergency ticket actively breaching SLA (gas smell in Unit A-201)
-- Routine ticket with a tenant/staff back-and-forth comment thread (AC issue in TH-1)
-- Manager dashboard shows triage warnings and assigns multiple tickets at once
+• WhatsApp messages  
+• Phone calls  
+• Spreadsheets  
+• Email threads  
 
-## How It Hits the Evaluation Criteria
+This leads to:
 
-### 1. Workflow Logic and Edge Cases
-- Offline-first technician flow with a SyncManager queue for basement deadzones
-- Strict SLA state machine with role-based enforcement on every transition
-- Emergency detection for gas/fire/flood keywords with automatic escalation
+❌ lost requests  
+❌ delayed response times  
+❌ poor accountability  
+❌ no audit trail  
+❌ technicians unable to work in offline environments  
 
-### 2. No Paid APIs and Thoughtful UX
-- Client-side AI triage via `transformers.js` in a Web Worker, zero API cost
-- Fallback keyword matching if the model cannot load on a client
-- Voice input using the native Web Speech API for mobile-first reporting
+---
 
-### 3. Backend Architecture and Data Integrity
-- Next.js App Router + Server Actions with Zod validation
-- Prisma schema designed around properties, buildings, units, and audit trails
-- Immutable `ActivityLog` chain for every assignment, status change, and comment
+# 💡 Our Solution
 
-### 4. Auth and Role Management
-- Auth.js (NextAuth v5) with JWT sessions
-- Granular RBAC: tenants cannot assign, technicians cannot delete, managers control triage
+PropMaint introduces a **structured, AI-assisted maintenance workflow platform** that enables:
 
-### 5. Tests and Quality
-- Playwright E2E: tenant submits a ticket, manager assigns it
-- Vitest unit tests for RBAC and core workflow utilities
+• Tenants to report issues quickly  
+• Managers to triage and assign tickets efficiently  
+• Technicians to work even in **offline environments**
 
-## Core Features
+The system ensures **full traceability, SLA enforcement, and real-time workflow management**.
 
-- Role-based dashboards for tenants, managers, and technicians
-- Multi-step ticket wizard with voice input, attachments, and auto-categorization
-- SLA deadlines by priority with breach warnings and triage banners
-- Bulk assignment for managers and visual “on fire” ticket indicators
-- Activity timeline, notifications, and internal vs external comments
-- Offline queue for technicians that syncs when connectivity returns
+---
 
-## Tech Stack
+# 🧠 Key Innovations
 
-| Layer | Technology | Why |
-| --- | --- | --- |
-| Framework | Next.js 16.1 (App Router + Server Actions) | Single codebase, TypeScript end-to-end |
-| Database | PostgreSQL (Neon in demo) | Serverless Postgres with free tier |
-| ORM | Prisma | Type-safe schema and queries |
-| Auth | NextAuth v5 (Auth.js) | JWT-based sessions and middleware protection |
-| UI | shadcn/ui + Tailwind CSS | Accessible components and rapid iteration |
-| AI | transformers.js | In-browser ML, zero API cost |
-| Tests | Vitest + Playwright | Unit + E2E coverage |
+## Edge AI Ticket Triage
 
-## Database Schema
+PropMaint performs **Natural Language Processing directly in the browser** using:
+
+```
+transformers.js + Web Workers
+```
+
+This enables:
+
+• **zero API cost**
+• **no external dependencies**
+• **no UI blocking**
+
+The AI automatically classifies maintenance requests and detects **emergency issues such as:**
+
+- Gas leaks
+- Fire hazards
+- Flooding
+
+If the ML model fails to load, a **fallback keyword detection system** ensures reliability.
+
+---
+
+## ⚡ Offline-First Technician Workflow
+
+Technicians frequently work in:
+
+- basements
+- underground parking
+- areas with poor signal
+
+PropMaint includes a **SyncManager queue system** that allows technicians to:
+
+• update ticket progress  
+• upload notes  
+• log work  
+
+even while offline.
+
+When connectivity returns, the queue automatically **syncs with the server**.
+
+---
+
+## 🔥 SLA Enforcement Engine
+
+Every ticket in PropMaint is governed by a **priority-based SLA state machine**.
+
+Features include:
+
+• deadline tracking  
+• automatic breach detection  
+• visual "on fire" indicators  
+• manager escalation banners  
+
+This ensures **critical maintenance issues cannot be ignored.**
+
+---
+
+# 🎯 Live Demo
+
+The demo environment is pre-seeded with realistic data.
+
+| Role | Email | Password |
+|-----|------|------|
+| Tenant | `sarah.johnson@demo.com` | `demo123` |
+| Manager | `michael.chen@demo.com` | `demo123` |
+| Technician | `james.rodriguez@demo.com` | `demo123` |
+
+### Demo Story
+
+The seeded database includes:
+
+• An **emergency gas leak ticket currently breaching SLA**  
+• A **tenant-technician conversation thread**  
+• Multiple tickets ready for **bulk assignment by managers**
+
+This allows judges to immediately experience the full workflow.
+
+---
+
+# 🏗️ System Architecture
+
+PropMaint follows a **modern full-stack architecture** built for scalability.
+
+```
+Client (Next.js App Router)
+        │
+        │ Server Actions
+        ▼
+Application Layer
+        │
+        ▼
+Prisma ORM
+        │
+        ▼
+PostgreSQL Database
+```
+
+AI processing occurs **directly on the client device** using Web Workers.
+
+Deployment is handled via:
+
+```
+Docker + Nginx Reverse Proxy
+```
+
+---
+
+# 🚀 Core Features
+
+### Role-Based Workflow
+
+PropMaint separates permissions for:
+
+**Tenants**
+
+- report issues
+- upload images
+- track progress
+
+**Managers**
+
+- triage requests
+- assign technicians
+- monitor SLA breaches
+
+**Technicians**
+
+- update task progress
+- work offline
+- log resolution details
+
+---
+
+### Multi-Step Ticket Wizard
+
+Tenants submit issues through a guided workflow including:
+
+• voice-to-text input  
+• image attachments  
+• automatic categorization  
+
+---
+
+### Immutable Activity Logs
+
+Every ticket action is permanently recorded.
+
+Examples include:
+
+• status changes  
+• technician assignments  
+• comments  
+• updates  
+
+This creates a **complete audit trail.**
+
+---
+
+### Modern UX
+
+PropMaint includes several usability improvements:
+
+• Dark / Light theme toggle  
+• Mobile-first interface  
+• Offline network banners  
+• Real-time notifications  
+• Activity timeline
+
+---
+
+# 🛠️ Tech Stack
+
+| Layer | Technology |
+|-----|-----|
+| Framework | Next.js 16 (App Router + Server Actions) |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Authentication | NextAuth v5 (Auth.js) |
+| Styling | Tailwind CSS + shadcn/ui |
+| AI | transformers.js |
+| Testing | Playwright + Vitest |
+| Deployment | Docker + Nginx |
+
+---
+
+# 🗄️ Database Schema
 
 ```mermaid
 erDiagram
@@ -95,65 +257,122 @@ erDiagram
     Ticket ||--o{ Notification : triggers
 ```
 
-## Docker Setup
+---
 
-```bash
+# 🐳 Docker & Production
+
+PropMaint includes a **production-ready container setup**.
+
+```
 docker compose up --build
-# DB is auto-seeded on startup (3 tenants, 2 managers, 5 technicians, 10 tickets)
-# Open http://localhost:3000
 ```
 
-## Local Development
+The system automatically:
 
-```bash
-# 1. Clone
+• builds containers  
+• initializes the database  
+• seeds demo data  
+
+Access the app:
+
+```
+http://localhost:3000
+```
+
+---
+
+# 💻 Local Development
+
+Clone the repository
+
+```
 git clone https://github.com/Puneethreddy2530/PropMaint.git
 cd PropMaint
+```
 
-# 2. Install
+Install dependencies
+
+```
 npm install
+```
 
-# 3. Configure
+Configure environment variables
+
+```
 cp .env.example .env
-# Set DATABASE_URL and AUTH_SECRET
+```
 
-# 4. Database
+Initialize the database
+
+```
 npx prisma generate
 npx prisma db push
 npm run db:seed
-
-# 5. Run
-npm run dev
-# Open http://localhost:3000
 ```
 
-## Testing
+Start the development server
 
-```bash
-# Unit tests (RBAC)
+```
+npm run dev
+```
+
+---
+
+# 🧪 Testing
+
+Unit tests
+
+```
 npm run test:unit
+```
 
-# E2E tests (Playwright)
-# First time: npx playwright install
+End-to-end tests
+
+```
+npx playwright install
 npm run test:e2e
 ```
 
+CI pipelines automatically run these tests on every push.
 
-## Project Structure
+---
+
+# 📂 Project Structure
 
 ```
+.github/workflows/   CI/CD pipelines
+prisma/              Database schema
+scripts/             Database seeding
 src/
-  actions/           # Server Actions (auth, tickets, activity logging)
-  app/
-    (auth)/login/    # Login with quick-demo role buttons
-    (dashboard)/     # All protected pages
-    api/             # Auth handler + file upload endpoint
-  components/
-    layout/          # App shell, theme toggle, offline banner, transitions
-    tickets/         # Wizard, timeline, comments, upload, actions
-    dashboard/       # Stat cards, recent tickets
-    ui/              # shadcn/ui primitives
-  lib/               # Auth, permissions, AI worker, speech, sync, utils
+ ├ actions/          Server actions
+ ├ app/              App router pages
+ ├ components/       UI components
+ │   ├ layout
+ │   ├ dashboard
+ │   ├ tickets
+ │   └ ui
+ └ lib/              AI worker, speech, sync utilities
+tests/               Unit + E2E tests
+
+docker-compose.yml
+nginx.conf
+Dockerfile
 ```
 
-Built for the Qwego PropTech Challenge. No paid APIs. Fully demo-ready.
+---
+
+# 🏁 Challenge Submission
+
+PropMaint was built for the **Qwego PropTech Full-Stack Challenge**.
+
+The system demonstrates:
+
+• real-world workflow modeling  
+• scalable architecture  
+• offline resilience  
+• zero-cost AI integration  
+• production-grade deployment
+
+No paid APIs were used.
+
+---
