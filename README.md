@@ -242,4 +242,4 @@ The system demonstrates:
 - **Cost-Effective Scalability:** Zero-cost AI integration that triage's support tickets instantly without exorbitant API bills.
 - **Production-grade engineering:** Strict schemas, E2E tests, and Dockerized deployment.
 
-> *We didn't just build a CRUD app; we built a system that fundamentally improves the operational efficiency of property management.*
+> *This isnn't just build a CRUD app; I built a system that fundamentally improves the operational efficiency of property management.*
